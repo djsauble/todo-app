@@ -1,6 +1,12 @@
 Ext.define('TodoApp.view.Edit', {
     extend: 'Ext.Panel',
     alias: 'widget.todo-edit',
+    requires: [
+        'Ext.TitleBar',
+        'Ext.form.Panel',
+        'Ext.form.FieldSet',
+        'Ext.field.Radio'
+    ],
 
     config: {
         items: [
@@ -10,7 +16,8 @@ Ext.define('TodoApp.view.Edit', {
                 title: 'Edit item',
                 items: {
                     align: 'right',
-                    text: 'Save'
+                    text: 'Save',
+                    action: 'save'
                 }
             },
             {

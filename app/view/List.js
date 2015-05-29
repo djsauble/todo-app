@@ -1,6 +1,10 @@
 Ext.define('TodoApp.view.List', {
     extend: 'Ext.Panel',
     alias: 'widget.todo-list',
+    requires: [
+        'Ext.TitleBar',
+        'Ext.List'
+    ],
 
     config: {
     	items: [
@@ -10,7 +14,8 @@ Ext.define('TodoApp.view.List', {
 	            title: 'Things to do',
 	            items: {
 	                align: 'right',
-	                text: 'Add'
+	                text: 'Add',
+	                action: 'new'
 	            }
 	        },
 	        {
