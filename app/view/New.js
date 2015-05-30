@@ -30,7 +30,10 @@ Ext.define('TodoApp.view.New', {
                     {
                         xtype: 'fieldset',
                         title: 'Description',
-                        items: {xtype: 'textfield'}
+                        items: {
+                            xtype: 'textfield',
+                            name: 'description'
+                        }
                     },
                     {
                         xtype: 'fieldset',
@@ -50,9 +53,22 @@ Ext.define('TodoApp.view.New', {
                             name: 'location'
                         },
                         items: [
-                            {value: 'here', label: 'Current location'},
-                            {value: 'home', label: 'Home'},
-                            {value: 'work', label: 'Work'}
+                            {
+                                name: 'location',
+                                value: 'here',
+                                checked: true,
+                                label: 'Current location'
+                            },
+                            {
+                                name: 'location',
+                                value: 'home',
+                                label: 'Home'
+                            },
+                            {
+                                name: 'location',
+                                value: 'work',
+                                label: 'Work'
+                            }
                         ]
                     }
                 ]

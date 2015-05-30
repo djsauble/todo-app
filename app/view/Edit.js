@@ -5,7 +5,8 @@ Ext.define('TodoApp.view.Edit', {
         'Ext.TitleBar',
         'Ext.form.Panel',
         'Ext.form.FieldSet',
-        'Ext.field.Radio'
+        'Ext.field.Radio',
+        'Ext.field.Hidden'
     ],
 
     config: {
@@ -27,11 +28,15 @@ Ext.define('TodoApp.view.Edit', {
 
                 items: [
                     {
+                        xtype: 'hiddenfield',
+                        name: 'id'
+                    },
+                    {
                         xtype: 'fieldset',
                         title: 'Description',
                         items: {
                             xtype: 'textfield',
-                            value: 'Chase the mail carrier'
+                            name: 'description'
                         }
                     },
                     {
@@ -60,9 +65,21 @@ Ext.define('TodoApp.view.Edit', {
                             name: 'location'
                         },
                         items: [
-                            {value: 'home', label: 'Home', checked: true},
-                            {value: 'work', label: 'Work'},
-                            {value: 'other', label: 'Other'}
+                            {
+                                name: 'location',
+                                value: 'home',
+                                label: 'Home'
+                            },
+                            {
+                                name: 'location',
+                                value: 'work',
+                                label: 'Work'
+                            },
+                            {
+                                name: 'location',
+                                value: 'other',
+                                label: 'Other'
+                            }
                         ]
                     }
                 ]

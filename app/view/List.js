@@ -3,7 +3,7 @@ Ext.define('TodoApp.view.List', {
     alias: 'widget.todo-list',
     requires: [
         'Ext.TitleBar',
-        'Ext.List'
+        'Ext.dataview.DataView'
     ],
 
     config: {
@@ -19,28 +19,19 @@ Ext.define('TodoApp.view.List', {
 	            }
 	        },
 	        {
-	        	xtype: 'list',
+	        	xtype: 'dataview',
 	        	height: '100%',
-
-			    store: {
-			        fields: ['name'],
-			        data: [
-			            {name: 'Eat food'},
-			            {name: 'Fetch slippers'},
-			            {name: 'Sit/stay'},
-			            {name: 'Chew bone'},
-			            {name: 'Go for a walk'},
-			            {name: 'Chase the mail carrier'},
-			            {name: ''},
-			            {name: 'Deleted items'},
-			            {name: 'Play with Sparky'},
-			            {name: 'Howl at the moon'},
-			            {name: 'Chase the cat'}
-			        ]
-			    },
-
-			    itemTpl: '{name}'
+	        	useComponents: true,
+	        	defaultType: 'todolistitem',
+            store: 'Item'
 	        }
     	]
+    },
+
+    initialize: function() {
+    	// Autoload appears to be broken for dataviews
+    	Ext.getStore('Item').load();
+
+    	this.callParent();
     }
 });
