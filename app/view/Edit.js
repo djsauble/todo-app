@@ -15,11 +15,18 @@ Ext.define('TodoApp.view.Edit', {
                 docked: 'top',
                 xtype: 'titlebar',
                 title: 'Edit item',
-                items: {
-                    align: 'right',
-                    text: 'Save',
-                    action: 'save'
-                }
+                items: [
+                    {
+                        align: 'left',
+                        text: 'Back',
+                        action: 'back'
+                    },
+                    {
+                        align: 'right',
+                        text: 'Save',
+                        action: 'save'
+                    }
+                ]
             },
             {
                 xtype: 'formpanel',

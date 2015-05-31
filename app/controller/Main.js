@@ -45,11 +45,17 @@ Ext.define('TodoApp.controller.Main', {
 			'todo-list button[action=delete]': {
 				tap: 'deleteTodoItem'
 			},
-			'todo-new button[action=save]': {
+			'todo-new button[action=create]': {
 				tap: 'createTodoItem'
+			},
+			'todo-new button[action=back]': {
+				tap: 'showListView'
 			},
 			'todo-edit button[action=save]': {
 				tap: 'saveTodoItem'
+			},
+			'todo-edit button[action=back]': {
+				tap: 'showListView'
 			}
 		}
 	},
@@ -96,5 +102,8 @@ Ext.define('TodoApp.controller.Main', {
 	},
 	showNewView: function() {
 		this.showView(this.getNewPanel());
+	},
+	showListView: function() {
+		this.showView(this.getListPanel());
 	}
 });
