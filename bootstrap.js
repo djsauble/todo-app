@@ -532,17 +532,6 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.layout.wrapper.BoxDock": [],
   "Ext.layout.wrapper.Dock": [],
   "Ext.layout.wrapper.Inner": [],
-  "Ext.log.Base": [],
-  "Ext.log.Logger": [],
-  "Ext.log.filter.Filter": [],
-  "Ext.log.filter.Priority": [],
-  "Ext.log.formatter.Default": [],
-  "Ext.log.formatter.Formatter": [],
-  "Ext.log.formatter.Identity": [],
-  "Ext.log.writer.Console": [],
-  "Ext.log.writer.DocumentTitle": [],
-  "Ext.log.writer.Remote": [],
-  "Ext.log.writer.Writer": [],
   "Ext.mixin.Bindable": [],
   "Ext.mixin.Filterable": [],
   "Ext.mixin.Mixin": [],
@@ -667,7 +656,14 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.viewport.WindowsPhone": [
     "Ext.viewport.WP"
   ],
-  "TodoApp.view.Main": []
+  "TodoApp.controller.Main": [],
+  "TodoApp.model.Item": [],
+  "TodoApp.store.Item": [],
+  "TodoApp.view.Edit": [],
+  "TodoApp.view.List": [],
+  "TodoApp.view.Main": [],
+  "TodoApp.view.New": [],
+  "TodoApp.view.TodoListItem": []
 });
 
 Ext.ClassManager.addNameAliasMappings({
@@ -1248,17 +1244,6 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.layout.wrapper.BoxDock": [],
   "Ext.layout.wrapper.Dock": [],
   "Ext.layout.wrapper.Inner": [],
-  "Ext.log.Base": [],
-  "Ext.log.Logger": [],
-  "Ext.log.filter.Filter": [],
-  "Ext.log.filter.Priority": [],
-  "Ext.log.formatter.Default": [],
-  "Ext.log.formatter.Formatter": [],
-  "Ext.log.formatter.Identity": [],
-  "Ext.log.writer.Console": [],
-  "Ext.log.writer.DocumentTitle": [],
-  "Ext.log.writer.Remote": [],
-  "Ext.log.writer.Writer": [],
   "Ext.mixin.Bindable": [],
   "Ext.mixin.Filterable": [],
   "Ext.mixin.Mixin": [],
@@ -1399,8 +1384,23 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.Ios": [],
   "Ext.viewport.Viewport": [],
   "Ext.viewport.WindowsPhone": [],
+  "TodoApp.controller.Main": [],
+  "TodoApp.model.Item": [],
+  "TodoApp.store.Item": [],
+  "TodoApp.view.Edit": [
+    "widget.todo-edit"
+  ],
+  "TodoApp.view.List": [
+    "widget.todo-list"
+  ],
   "TodoApp.view.Main": [
-    "widget.main"
+    "widget.todo-main"
+  ],
+  "TodoApp.view.New": [
+    "widget.todo-new"
+  ],
+  "TodoApp.view.TodoListItem": [
+    "widget.todolistitem"
   ]
 });
 
