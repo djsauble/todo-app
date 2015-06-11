@@ -5,7 +5,8 @@ Ext.define('TodoApp.view.New', {
         'Ext.TitleBar',
         'Ext.form.Panel',
         'Ext.form.FieldSet',
-        'Ext.field.Radio'
+        'Ext.field.Radio',
+        'TodoApp.view.Image'
     ],
 
     config: {
@@ -43,12 +44,7 @@ Ext.define('TodoApp.view.New', {
                         }
                     },
                     {
-                        xtype: 'fieldset',
-                        title: 'Image',
-                        items: {
-                            xtype: 'button',
-                            text: 'Select image…'
-                        }
+                        xtype: 'todo-image'
                     },
                     {
                         xtype: 'fieldset',
