@@ -11,7 +11,7 @@ Ext.define('TodoApp.model.Item', {
 		fields: [
 			'id',
 			'description',
-			'image',
+			'media',
 			'location'
 		],
 		proxy: {

@@ -6,6 +6,10 @@ Ext.define('TodoApp.view.Image', {
         title: 'Image',
 		items: [
 			{
+				xtype: 'hiddenfield',
+				name: 'media'
+			},
+			{
 				xtype: 'panel',
 				layout: 'fit',
 				html: 'No image loaded'
@@ -31,6 +35,7 @@ Ext.define('TodoApp.view.Image', {
 	},
 
 	removeImage: function(scope) {
+		scope.down('hiddenfield').setValue('');
 		scope.down('panel').setHtml('No image loaded');
 		scope.down('button[text=Select]').setHidden(false);
 		scope.down('button[text=Remove]').setHidden(true);
@@ -38,8 +43,10 @@ Ext.define('TodoApp.view.Image', {
 
 	selectImage: function(scope) {
         navigator.camera.getPicture(
-        	function(imageURI) { // Success
-				scope.down('panel').setHtml('<img src="' + imageURI + '" alt="todo image" width="100%"/>');
+        	function(dataUrl) { // Success
+        		var media = 'data:image/jpeg;base64,' + dataUrl;
+        		scope.down('hiddenfield').setValue(media)
+				scope.down('panel').setHtml('<img src="' + media + '" alt="todo image" width="100%"/>');
 				scope.down('button[text=Select]').setHidden(true);
 				scope.down('button[text=Remove]').setHidden(false);
 	        },
@@ -48,8 +55,9 @@ Ext.define('TodoApp.view.Image', {
 	        },
 	        { // Options
 	            quality: 50,
-	            destinationType: navigator.camera.DestinationType.FILE_URL,
-	            sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY
+	            destinationType: navigator.camera.DestinationType.DATA_URL,
+	            sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY,
+	            CameraUsesGeolocation: true
 	        }
         );
 	},

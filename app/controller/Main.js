@@ -70,9 +70,17 @@ Ext.define('TodoApp.controller.Main', {
 	editTodoItem: function(button, e, eOpts) {
 		var store = this.getListDataView().getStore(),
 			editPanel = this.getEditPanel(),
-			editForm = this.getEditForm();
+			editForm = this.getEditForm(),
+			imagePanel = editForm.down('todo-image').down('panel'),
+			record = store.findRecord('id', button.getData()),
+			mediaData = record.get('media');
 
-		editForm.setRecord(store.findRecord('id', button.getData()));
+		editForm.setRecord(record);
+
+		// Show the associated image
+		if (mediaData) {
+			imagePanel.setHtml('<img src="' + record.get('media') + '" alt="todo image" width="100%"/>');	
+		}
 
 		this.showView(editPanel);
 	},

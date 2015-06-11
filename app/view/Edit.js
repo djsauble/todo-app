@@ -47,20 +47,7 @@ Ext.define('TodoApp.view.Edit', {
                         }
                     },
                     {
-                        xtype: 'fieldset',
-                        title: 'Image',
-                        items: [
-                            {
-                                xtype: 'panel',
-                                width: '100%',
-                                height: 156,
-                                style: 'background: #AAAAAA'
-                            },
-                            {
-                                xtype: 'button',
-                                text: 'Remove image'
-                            }
-                        ]
+                        xtype: 'todo-image'
                     },
                     {
                         xtype: 'fieldset',
