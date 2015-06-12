@@ -50,31 +50,7 @@ Ext.define('TodoApp.view.Edit', {
                         xtype: 'todo-image'
                     },
                     {
-                        xtype: 'fieldset',
-                        title: 'Location',
-                        defaults: {
-                            labelAlign: 'right',
-                            labelWidth: '240px',
-                            xtype: 'radiofield',
-                            name: 'location'
-                        },
-                        items: [
-                            {
-                                name: 'location',
-                                value: 'home',
-                                label: 'Home'
-                            },
-                            {
-                                name: 'location',
-                                value: 'work',
-                                label: 'Work'
-                            },
-                            {
-                                name: 'location',
-                                value: 'other',
-                                label: 'Other'
-                            }
-                        ]
+                        xtype: 'todo-map'
                     }
                 ]
             }

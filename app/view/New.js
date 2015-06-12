@@ -6,7 +6,8 @@ Ext.define('TodoApp.view.New', {
         'Ext.form.Panel',
         'Ext.form.FieldSet',
         'Ext.field.Radio',
-        'TodoApp.view.Image'
+        'TodoApp.view.Image',
+        'TodoApp.view.Map'
     ],
 
     config: {
@@ -47,32 +48,7 @@ Ext.define('TodoApp.view.New', {
                         xtype: 'todo-image'
                     },
                     {
-                        xtype: 'fieldset',
-                        title: 'Location',
-                        defaults: {
-                            labelAlign: 'right',
-                            labelWidth: '240px',
-                            xtype: 'radiofield',
-                            name: 'location'
-                        },
-                        items: [
-                            {
-                                name: 'location',
-                                value: 'here',
-                                checked: true,
-                                label: 'Current location'
-                            },
-                            {
-                                name: 'location',
-                                value: 'home',
-                                label: 'Home'
-                            },
-                            {
-                                name: 'location',
-                                value: 'work',
-                                label: 'Work'
-                            }
-                        ]
+                        xtype: 'todo-map'
                     }
                 ]
             }

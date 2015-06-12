@@ -71,7 +71,7 @@ Ext.define('TodoApp.controller.Main', {
 		var store = this.getListDataView().getStore(),
 			editPanel = this.getEditPanel(),
 			editForm = this.getEditForm(),
-			imagePanel = editForm.down('todo-image').down('panel'),
+			imagePanel = editForm.down('todo-image'),
 			record = store.findRecord('id', button.getData()),
 			mediaData = record.get('media');
 
@@ -79,7 +79,9 @@ Ext.define('TodoApp.controller.Main', {
 
 		// Show the associated image
 		if (mediaData) {
-			imagePanel.setHtml('<img src="' + record.get('media') + '" alt="todo image" width="100%"/>');	
+			imagePanel.down('panel').setHtml('<img src="' + record.get('media') + '" alt="todo image" width="100%"/>');
+			imagePanel.down('button[text=Select]').setHidden(true);
+			imagePanel.down('button[text=Remove]').setHidden(false);
 		}
 
 		this.showView(editPanel);

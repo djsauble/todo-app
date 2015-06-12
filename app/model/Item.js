@@ -9,10 +9,11 @@ Ext.define('TodoApp.model.Item', {
 			type: 'uuid'
 		},
 		fields: [
-			'id',
-			'description',
-			'media',
-			'location'
+			{ name: 'id', type: 'string' },
+			{ name: 'description', type: 'string' },
+			{ name: 'media', type: 'string' },
+			{ name: 'latitude', type: 'number' },
+			{ name: 'longitude', type: 'number' }
 		],
 		proxy: {
 			type: 'localstorage',
