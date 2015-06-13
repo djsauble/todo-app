@@ -110,7 +110,6 @@ Ext.define('TodoApp.controller.Main', {
 		if (!this.mapResource) {
 			this.mapResource = Ext.create('widget.map', {
                 xtype: 'map',
-                //useCurrentLocation: true,
                 width: 'auto',
                 height: 300,
                 mapOptions: {

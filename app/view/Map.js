@@ -33,10 +33,11 @@ Ext.define('TodoApp.view.Map', {
                 xtype: 'button',
                 text: 'Set',
                 handler: function(button) {
-                	var parent = button.up('todo-map');
+                	var parent = button.up('todo-map'),
+                        map = parent.down('map').getMap();
                 	parent.setMarker(parent);
 
-                    var position = parent.mapMarker.getPosition();
+                    var position = map.mapMarker.getPosition();
                     parent.down('hiddenfield[name=latitude]').setValue(position.lat());
                     parent.down('hiddenfield[name=longitude]').setValue(position.lng());
                 }
@@ -55,8 +56,6 @@ Ext.define('TodoApp.view.Map', {
             }
         ]
 	},
-
-	mapMarker: null,
 
     onMapRender: function(obj, map) {
         var mapPanel = obj.up('todo-map');
@@ -94,8 +93,8 @@ Ext.define('TodoApp.view.Map', {
 		var map = me.down('map').getMap(),
             position;
 
-		if (me.mapMarker) {
-			me.mapMarker.setMap(null);
+		if (map.mapMarker) {
+			map.mapMarker.setMap(null);
 		}
 
         if (latitude && longitude) {
@@ -104,7 +103,7 @@ Ext.define('TodoApp.view.Map', {
             position = map.getCenter();
         }
 
-		me.mapMarker = new google.maps.Marker({
+		map.mapMarker = new google.maps.Marker({
 			position: position,
 			map: map
 		});
@@ -113,20 +112,22 @@ Ext.define('TodoApp.view.Map', {
 		me.down('button[text=Clear]').setHidden(false);
         me.down('map').setUseCurrentLocation(false);
 		me.down('map').setMapOptions({
-            center: me.mapMarker.getPosition(),
+            center: map.mapMarker.getPosition(),
             draggable: false
         });
-        //me.mapCenter.setVisible(false);
+        map.mapCenter.setVisible(false);
 	},
 
 	clearMarker: function(me) {
-		if (me.mapMarker) {
-			me.mapMarker.setMap(null);
-		}
+        var map = me.down('map').getMap();
+
+		if (map.mapMarker) {
+			map.mapMarker.setMap(null);
+        }
 
 		me.down('button[text=Set]').setHidden(false);
 		me.down('button[text=Clear]').setHidden(true);
 		me.down('map').setMapOptions({draggable: true});
-        //me.mapCenter.setVisible(true);
+        map.mapCenter.setVisible(true);
 	}
 });
