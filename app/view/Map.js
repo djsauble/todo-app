@@ -17,21 +17,18 @@ Ext.define('TodoApp.view.Map', {
         		xtype: 'hiddenfield',
         		name: 'longitude'
         	},
-        	{
-        		xtype: 'map',
-        		useCurrentLocation: true,
-        		width: 'auto',
-        		height: 300,
-        		mapOptions: {
-        			zoom: 15
-        		},
-        		listeners: {
-        			maprender: function(obj, map) {
-                        var parent = this.up('todo-map');
-                        parent.onMapRender(obj, map);
-        			}
-        		}
-        	},
+            {
+                xtype: 'panel',
+                layout: 'fit',
+                width: '100%',
+                height: 300,
+                listeners: {
+                    add: function(obj, item, index) {
+                        var parent = obj.up('todo-map');
+                        parent.onMapAdd(obj, item.getMap());
+                    }
+                }
+            },
             {
                 xtype: 'button',
                 text: 'Set',
@@ -60,24 +57,36 @@ Ext.define('TodoApp.view.Map', {
 	},
 
 	mapMarker: null,
-	mapCenter: null,
 
     onMapRender: function(obj, map) {
-        var mapPanel = obj.up('todo-map'),
-            longitude = mapPanel.down('hiddenfield[name=longitude]').getValue(),
-            latitude = mapPanel.down('hiddenfield[name=latitude]').getValue(),
-            centerMarker = new google.maps.Marker({
+        var mapPanel = obj.up('todo-map');
+
+        if (!map.mapCenter) {
+            map.mapCenter = new google.maps.Marker({
                 map: map,
                 opacity: 0.5
             });
+            map.mapCenter.bindTo('position', map, 'center');
+        }
 
-        centerMarker.bindTo('position', map, 'center');
-        mapPanel.mapCenter = centerMarker;
+        if (!mapPanel.mapRendered) {
+            map.mapRendered = true;
+            mapPanel.onMapAdd(obj, map);
+        }
+    },
 
-        if (longitude && latitude) {
-            mapPanel.setMarker(mapPanel, latitude, longitude);
-        } else {
-            mapPanel.mapCenter.setVisible(true);
+    onMapAdd: function(obj, map) {
+        var mapPanel = obj.up('todo-map'),
+            longitude = mapPanel.down('hiddenfield[name=longitude]').getValue(),
+            latitude = mapPanel.down('hiddenfield[name=latitude]').getValue();
+
+        if (map.mapRendered) {
+            if (longitude && latitude) {
+                mapPanel.setMarker(mapPanel, latitude, longitude);
+            } else {
+                mapPanel.down('map').setUseCurrentLocation(true);
+                mapPanel.clearMarker(mapPanel);
+            }
         }
     },
 
@@ -107,7 +116,7 @@ Ext.define('TodoApp.view.Map', {
             center: me.mapMarker.getPosition(),
             draggable: false
         });
-		me.mapCenter.setVisible(false);
+        //me.mapCenter.setVisible(false);
 	},
 
 	clearMarker: function(me) {
@@ -118,6 +127,6 @@ Ext.define('TodoApp.view.Map', {
 		me.down('button[text=Set]').setHidden(false);
 		me.down('button[text=Clear]').setHidden(true);
 		me.down('map').setMapOptions({draggable: true});
-		me.mapCenter.setVisible(true);
+        //me.mapCenter.setVisible(true);
 	}
 });

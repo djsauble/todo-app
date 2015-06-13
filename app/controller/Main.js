@@ -65,7 +65,7 @@ Ext.define('TodoApp.controller.Main', {
 		store.add(this.getNewForm().getValues())
 		store.sync();
 		
-		this.showView(this.getListPanel());
+		this.showListView();
 	},
 	editTodoItem: function(button, e, eOpts) {
 		var store = this.getListDataView().getStore(),
@@ -84,7 +84,7 @@ Ext.define('TodoApp.controller.Main', {
 			imagePanel.down('button[text=Remove]').setHidden(false);
 		}
 
-		this.showView(editPanel);
+		this.showEditView();
 	},
 	deleteTodoItem: function(button, e, eOpts) {
 		var dataview = this.getListDataView(),
@@ -104,14 +104,42 @@ Ext.define('TodoApp.controller.Main', {
 		record.setDirty(); // Needed otherwise update record will not sync
 		store.sync();
 
-		this.showView(this.getListPanel());
+		this.showListView();
 	},
 	showView: function(view) {
-		this.getMainPanel().removeAll(true);
+		if (!this.mapResource) {
+			this.mapResource = Ext.create('widget.map', {
+                xtype: 'map',
+                //useCurrentLocation: true,
+                width: 'auto',
+                height: 300,
+                mapOptions: {
+                    zoom: 15
+                },
+                listeners: {
+                    maprender: function(obj, map) {
+                        var parent = this.up('todo-map');
+                        parent.onMapRender(obj, map);
+                    }
+                }
+            });
+		}
+		var map = this.getMainPanel().down('todo-map');
+		if (map) {
+			map.down('panel').remove(this.mapResource, false);
+		}
+		this.getMainPanel().removeAll();
 		this.getMainPanel().add(view);
+		map = this.getMainPanel().down('todo-map');
+		if (map) {
+			map.down('panel').add(this.mapResource);
+		}
 	},
 	showNewView: function() {
 		this.showView(this.getNewPanel());
+	},
+	showEditView: function() {
+		this.showView(this.getEditPanel());
 	},
 	showListView: function() {
 		this.showView(this.getListPanel());
