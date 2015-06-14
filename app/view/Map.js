@@ -6,7 +6,6 @@ Ext.define('TodoApp.view.Map', {
 	],
 
 	config: {
-        xtype: 'fieldset',
         title: 'Location',
         items: [
         	{

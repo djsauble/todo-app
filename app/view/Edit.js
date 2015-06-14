@@ -6,7 +6,9 @@ Ext.define('TodoApp.view.Edit', {
         'Ext.form.Panel',
         'Ext.form.FieldSet',
         'Ext.field.Radio',
-        'Ext.field.Hidden'
+        'Ext.field.Hidden',
+        'TodoApp.view.Image',
+        'TodoApp.view.Map'
     ],
 
     config: {
