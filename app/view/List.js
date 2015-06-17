@@ -23,7 +23,7 @@ Ext.define('TodoApp.view.List', {
 	        	height: '100%',
 	        	useComponents: true,
 	        	defaultType: 'todolistitem',
-            store: 'Item'
+            	store: 'Item'
 	        }
     	]
     },
