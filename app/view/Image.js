@@ -60,5 +60,5 @@ Ext.define('TodoApp.view.Image', {
 	            CameraUsesGeolocation: true
 	        }
         );
-	},
+	}
 });

@@ -662,6 +662,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "TodoApp.view.Edit": [],
   "TodoApp.view.Image": [],
   "TodoApp.view.List": [],
+  "TodoApp.view.Location": [],
   "TodoApp.view.Main": [],
   "TodoApp.view.Map": [],
   "TodoApp.view.New": [],
@@ -1397,6 +1398,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "TodoApp.view.List": [
     "widget.todo-list"
+  ],
+  "TodoApp.view.Location": [
+    "widget.todo-location"
   ],
   "TodoApp.view.Main": [
     "widget.todo-main"

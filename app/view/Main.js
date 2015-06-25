@@ -3,7 +3,8 @@ Ext.define('TodoApp.view.Main', {
     alias: 'widget.todo-main',
     fullscreen: true,
     config: {
-        layout: 'fit',
+        layout: 'card',
         items: { xtype: 'todo-list' }
-    }
+    },
+    activeIndex: 0
 });

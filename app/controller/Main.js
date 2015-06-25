@@ -5,6 +5,7 @@ Ext.define('TodoApp.controller.Main', {
 			'List',
 			'New',
 			'Edit',
+			'Location',
 			'TodoListItem'
 		],
 		models: [
@@ -32,7 +33,12 @@ Ext.define('TodoApp.controller.Main', {
 				xtype: 'todo-edit',
 				autoCreate: true
 			},
-			editForm: 'todo-edit formpanel'
+			editForm: 'todo-edit formpanel',
+			locationPanel: {
+				selector: 'todo-location',
+				xtype: 'todo-location',
+				autoCreate: true
+			}
 		},
 		control: {
 			// HACK: Sencha says you shouldn’t define listeners in the config object, so don’t do this
@@ -49,21 +55,31 @@ Ext.define('TodoApp.controller.Main', {
 				tap: 'createTodoItem'
 			},
 			'todo-new button[action=back]': {
-				tap: 'showListView'
+				tap: 'goBack'
 			},
 			'todo-edit button[action=save]': {
 				tap: 'saveTodoItem'
 			},
 			'todo-edit button[action=back]': {
-				tap: 'showListView'
+				tap: 'goBack'
+			},
+			'todo-map button[action=set]': {
+				tap: 'showLocationView'
+			},
+			'todo-location button[action=back]': {
+				tap: 'goBack'
+			},
+			'todo-location button[action=set]': {
+				tap: 'setLocation'
 			}
 		}
 	},
 	createTodoItem: function(button, e, eOpts) {
-		var store = Ext.create('TodoApp.store.Item');
+		var store = Ext.getStore('Item');
 
 		store.add(this.getNewForm().getValues())
 		store.sync();
+    	store.load();
 		
 		this.showListView();
 	},
@@ -82,6 +98,10 @@ Ext.define('TodoApp.controller.Main', {
 			imagePanel.down('panel').setHtml('<img src="' + record.get('media') + '" alt="todo image" width="100%"/>');
 			imagePanel.down('button[text=Select]').setHidden(true);
 			imagePanel.down('button[text=Remove]').setHidden(false);
+		} else {
+			imagePanel.down('panel').setHtml('No image loaded');
+			imagePanel.down('button[text=Select]').setHidden(false);
+			imagePanel.down('button[text=Remove]').setHidden(true);
 		}
 
 		this.showEditView();
@@ -96,7 +116,7 @@ Ext.define('TodoApp.controller.Main', {
 		dataview.refresh();
 	},
 	saveTodoItem: function(button, e, eOpts) {
-		var store = Ext.create('TodoApp.store.Item'),
+		var store = Ext.getStore('Item'),
 			values = this.getEditForm().getValues(),
 			record = store.findRecord('id', values.id);
 
@@ -106,41 +126,108 @@ Ext.define('TodoApp.controller.Main', {
 
 		this.showListView();
 	},
-	showView: function(view) {
+	showView: function(view, index) {
+		this.createMapResource();
+		this.unloadMapResource();
+
+		for (var i = this.getMainPanel().getItems().length - 1; i >= index; --i) {
+			this.getMainPanel().remove(this.getMainPanel().getAt(i), false);
+		}
+		this.getMainPanel().add(view);
+		this.getMainPanel().setActiveItem(index);
+		this.getMainPanel().activeIndex = index;
+
+		this.loadMapResource();
+	},
+	goBack: function() {
+		this.unloadMapResource();
+
+		if (this.getMainPanel().activeIndex > 0) {
+			this.getMainPanel().activeIndex--;
+		}
+		this.getMainPanel().setActiveItem(this.getMainPanel().activeIndex);
+
+		this.loadMapResource();
+	},
+	showNewView: function() {
+		var newPanel = this.getNewPanel(),
+			newForm = this.getNewForm();
+
+		// Reset the new panel
+		newForm.reset();
+		newForm.down('todo-image').down('panel').setHtml('No image loaded');
+		newForm.down('todo-image').down('button[text=Select]').setHidden(false);
+		newForm.down('todo-image').down('button[text=Remove]').setHidden(true);
+
+		this.showView(newPanel, 1);
+	},
+	showEditView: function() {
+		this.showView(this.getEditPanel(), 1);
+	},
+	showListView: function() {
+		this.showView(this.getListPanel(), 0);
+	},
+	showLocationView: function() {
+		this.showView(this.getLocationPanel(), 2);
+	},
+	setLocation: function() {
+		var panel = this.getLocationPanel(),
+			position,
+			map;
+
+		position = panel.down('map').getMap().mapMarker.getPosition();
+		this.goBack();
+
+		panel = this.getMainPanel().getActiveItem().down('todo-map');
+		panel.down('hiddenfield[name=latitude]').setValue(position.lat());
+		panel.down('hiddenfield[name=longitude]').setValue(position.lng());
+		panel.hideMap(panel, false);
+    	panel.setMarker(panel, position.lat(), position.lng());
+	},
+	createMapResource: function() {
+		var me = this;
 		if (!this.mapResource) {
 			this.mapResource = Ext.create('widget.map', {
-                xtype: 'map',
-                width: 'auto',
-                height: 300,
-                mapOptions: {
-                    zoom: 15
-                },
-                listeners: {
-                    maprender: function(obj, map) {
-                        var parent = this.up('todo-map');
-                        parent.onMapRender(obj, map);
-                    }
-                }
-            });
+	            xtype: 'map',
+	            mapOptions: {
+	                zoom: 15,
+	                disableDefaultUI: true
+	            },
+	            listeners: {
+	            	maprender: function(obj, map) {
+				        var mapPanel = obj.up('todo-map') || obj.up('todo-location');
+
+						map.mapMarker = new google.maps.Marker({
+							map: map
+						});
+
+						// Trigger a resize when the bounds of the map change
+						google.maps.event.addListener(map, 'bounds_changed', function() {
+							var panel = obj.up('todo-map') || obj.up('todo-location');
+							panel.onMapAdd(obj, map);
+						});
+
+				        if (!mapPanel.mapRendered) {
+				            map.mapRendered = true;
+				            mapPanel.onMapAdd(obj, map);
+				        }
+				    }
+	            }
+	        });
 		}
-		var map = this.getMainPanel().down('todo-map');
+	},
+	unloadMapResource: function() {
+		var map = this.getMainPanel().down('map');
+
 		if (map) {
-			map.down('panel').remove(this.mapResource, false);
+			map.up('panel').remove(this.mapResource, false);
 		}
-		this.getMainPanel().removeAll();
-		this.getMainPanel().add(view);
-		map = this.getMainPanel().down('todo-map');
+	},
+	loadMapResource: function() {
+		var map = this.getMainPanel().getActiveItem().down('todo-map') || this.getMainPanel().down('todo-location');
+
 		if (map) {
 			map.down('panel').add(this.mapResource);
 		}
-	},
-	showNewView: function() {
-		this.showView(this.getNewPanel());
-	},
-	showEditView: function() {
-		this.showView(this.getEditPanel());
-	},
-	showListView: function() {
-		this.showView(this.getListPanel());
 	}
 });

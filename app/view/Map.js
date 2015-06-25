@@ -7,6 +7,11 @@ Ext.define('TodoApp.view.Map', {
 
 	config: {
         title: 'Location',
+        layout: {
+            type: 'vbox',
+            align: 'stretch',
+            pack: 'start'
+        },
         items: [
         	{
         		xtype: 'hiddenfield',
@@ -17,9 +22,13 @@ Ext.define('TodoApp.view.Map', {
         		name: 'longitude'
         	},
             {
+                xtype: 'container',
+                layout: 'fit',
+                html: 'No location selected'
+            },
+            {
                 xtype: 'panel',
                 layout: 'fit',
-                width: '100%',
                 height: 300,
                 listeners: {
                     add: function(obj, item, index) {
@@ -31,59 +40,34 @@ Ext.define('TodoApp.view.Map', {
             {
                 xtype: 'button',
                 text: 'Set',
-                handler: function(button) {
-                	var parent = button.up('todo-map'),
-                        map = parent.down('map').getMap();
-                	parent.setMarker(parent);
-
-                    var position = map.mapMarker.getPosition();
-                    parent.down('hiddenfield[name=latitude]').setValue(position.lat());
-                    parent.down('hiddenfield[name=longitude]').setValue(position.lng());
-                }
+                action: 'set'
             },
             {
-            	xtype: 'button',
-            	text: 'Clear',
-            	hidden: true,
-            	handler: function(button) {
-            		var parent = button.up('todo-map');
-            		parent.clearMarker(parent);
-
-                    parent.down('hiddenfield[name=latitude]').setValue(null);
-                    parent.down('hiddenfield[name=longitude]').setValue(null);
-            	}
+                xtype: 'button',
+                text: 'Clear',
+                hidden: true,
+                handler: function(button) {
+                    var parent = button.up('todo-map');
+                    parent.hideMap(parent, true);
+                }
             }
         ]
 	},
-
-    onMapRender: function(obj, map) {
-        var mapPanel = obj.up('todo-map');
-
-        if (!map.mapCenter) {
-            map.mapCenter = new google.maps.Marker({
-                map: map,
-                opacity: 0.5
-            });
-            map.mapCenter.bindTo('position', map, 'center');
-        }
-
-        if (!mapPanel.mapRendered) {
-            map.mapRendered = true;
-            mapPanel.onMapAdd(obj, map);
-        }
-    },
 
     onMapAdd: function(obj, map) {
         var mapPanel = obj.up('todo-map'),
             longitude = mapPanel.down('hiddenfield[name=longitude]').getValue(),
             latitude = mapPanel.down('hiddenfield[name=latitude]').getValue();
+        
+        // Resize the Google map
+        google.maps.event.trigger(map, 'resize');
 
         if (map.mapRendered) {
             if (longitude && latitude) {
+                mapPanel.hideMap(mapPanel, false);
                 mapPanel.setMarker(mapPanel, latitude, longitude);
             } else {
-                mapPanel.down('map').setUseCurrentLocation(true);
-                mapPanel.clearMarker(mapPanel);
+              mapPanel.hideMap(mapPanel, true);
             }
         }
     },
@@ -92,41 +76,23 @@ Ext.define('TodoApp.view.Map', {
 		var map = me.down('map').getMap(),
             position;
 
-		if (map.mapMarker) {
-			map.mapMarker.setMap(null);
-		}
+		map.mapMarker.setPosition(new google.maps.LatLng(latitude, longitude));
 
-        if (latitude && longitude) {
-            position = new google.maps.LatLng(latitude, longitude);
-        } else {
-            position = map.getCenter();
-        }
-
-		map.mapMarker = new google.maps.Marker({
-			position: position,
-			map: map
-		});
-
-		me.down('button[text=Set]').setHidden(true);
-		me.down('button[text=Clear]').setHidden(false);
-        me.down('map').setUseCurrentLocation(false);
 		me.down('map').setMapOptions({
             center: map.mapMarker.getPosition(),
             draggable: false
         });
-        map.mapCenter.setVisible(false);
 	},
 
-	clearMarker: function(me) {
-        var map = me.down('map').getMap();
-
-		if (map.mapMarker) {
-			map.mapMarker.setMap(null);
+    hideMap: function(me, hidden) {
+        if (hidden) {
+            me.down('hiddenfield[name=latitude]').setValue(null);
+            me.down('hiddenfield[name=longitude]').setValue(null);
         }
 
-		me.down('button[text=Set]').setHidden(false);
-		me.down('button[text=Clear]').setHidden(true);
-		me.down('map').setMapOptions({draggable: true});
-        map.mapCenter.setVisible(true);
-	}
+        me.down('container').setHidden(!hidden);
+        me.down('panel').setHidden(hidden);
+        me.down('button[text=Set]').setHidden(!hidden);
+        me.down('button[text=Clear]').setHidden(hidden);
+    }
 });
