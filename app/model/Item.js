@@ -1,23 +1,23 @@
 Ext.define('TodoApp.model.Item', {
 	extend: 'Ext.data.Model',
 	requires: [
-		'Ext.data.proxy.LocalStorage',
-		'Ext.data.identifier.Uuid'
+		'Ext.data.identifier.Uuid',
+		'Ext.data.proxy.LocalStorage'
 	],
 	config: {
 		identifier: {
 			type: 'uuid'
 		},
 		fields: [
-			{ name: 'id', type: 'string' },
-			{ name: 'description', type: 'string' },
-			{ name: 'media', type: 'string' },
-			{ name: 'latitude', type: 'number' },
-			{ name: 'longitude', type: 'number' }
+			'id',
+			'description',
+			'media',
+			{ name: 'latitude', type: 'float' },
+			{ name: 'longitude', type: 'float' }
 		],
 		proxy: {
-			type: 'localstorage',
-			id: 'todoapp-items'
-		}
+        	type: 'localstorage',
+        	id: 'todoapp-items'
+        }
 	}
 });

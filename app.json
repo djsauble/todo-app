@@ -71,6 +71,9 @@
         },
         {
             "path": "http://maps.google.com/maps/api/js?sensor=true"
+        },
+        {
+            "path": "pouchdb-3.6.0.min.js"
         }
     ],
 

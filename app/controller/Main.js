@@ -77,9 +77,7 @@ Ext.define('TodoApp.controller.Main', {
 	createTodoItem: function(button, e, eOpts) {
 		var store = Ext.getStore('Item');
 
-		store.add(this.getNewForm().getValues())
-		store.sync();
-    	store.load();
+		store.add(this.getNewForm().getValues());
 		
 		this.showListView();
 	},
@@ -111,9 +109,7 @@ Ext.define('TodoApp.controller.Main', {
 			store = dataview.getStore(),
 			record = store.findRecord('id', button.getData()).erase();
 
-		record.erase();
-		store.load();
-		dataview.refresh();
+		store.remove(record);
 	},
 	saveTodoItem: function(button, e, eOpts) {
 		var store = Ext.getStore('Item'),
