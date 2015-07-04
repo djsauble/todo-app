@@ -2,6 +2,7 @@ Ext.define('TodoApp.controller.Main', {
 	extend: 'Ext.app.Controller',
 	config: {
 		views: [
+			'SignIn',
 			'List',
 			'New',
 			'Edit',
@@ -9,9 +10,11 @@ Ext.define('TodoApp.controller.Main', {
 			'TodoListItem'
 		],
 		models: [
+			'User',
 			'Item'
 		],
 		stores: [
+			'User',
 			'Item'
 		],
 		refs: {
@@ -38,12 +41,24 @@ Ext.define('TodoApp.controller.Main', {
 				selector: 'todo-location',
 				xtype: 'todo-location',
 				autoCreate: true
-			}
+			},
+			signInPanel: {
+				selector: 'todo-sign-in',
+				xtype: 'todo-sign-in',
+				autoCreate: true
+			},
+			signInForm: 'todo-sign-in formpanel'
 		},
 		control: {
 			// HACK: Sencha says you shouldn’t define listeners in the config object, so don’t do this
 			'todo-list button[action=new]': {
 				tap: 'showNewView'
+			},
+			'todo-list button[action=signin]': {
+				tap: 'showSignInView'
+			},
+			'todo-list button[action=signout]': {
+				tap: 'signOut'
 			},
 			'todo-list button[action=edit]': {
 				tap: 'editTodoItem'
@@ -71,7 +86,28 @@ Ext.define('TodoApp.controller.Main', {
 			},
 			'todo-location button[action=set]': {
 				tap: 'setLocation'
+			},
+			'todo-sign-in button[action=back]': {
+				tap: 'goBack'
+			},
+			'todo-sign-in button[action=submit]': {
+				tap: 'signIn'
 			}
+		}
+	},
+	syncHandler: null,
+	init: function() {
+		var me = this,
+			store = Ext.getStore('Item'),
+			record = Ext.getStore('User').first(),
+			data;
+
+		store.localDB = new PouchDB('lists');
+
+		if (record) {
+			data = record.getData();
+			store.username = data.username;
+			me.connect(data.username, data.password);
 		}
 	},
 	createTodoItem: function(button, e, eOpts) {
@@ -157,6 +193,9 @@ Ext.define('TodoApp.controller.Main', {
 
 		this.showView(newPanel, 1);
 	},
+	showSignInView: function() {
+		this.showView(this.getSignInPanel(), 1);
+	},
 	showEditView: function() {
 		this.showView(this.getEditPanel(), 1);
 	},
@@ -225,5 +264,78 @@ Ext.define('TodoApp.controller.Main', {
 		if (map) {
 			map.down('panel').add(this.mapResource);
 		}
+	},
+	signIn: function() {
+		var values = this.getSignInForm().getValues();
+		this.getSignInForm().down('passwordfield').reset();
+		this.connect(values.username, values.password);
+		this.showListView();
+	},
+	signOut: function() {
+		this.disconnect();
+	},
+	connect: function(username, password) {
+		var itemStore = Ext.getStore('Item'),
+			userStore = Ext.getStore('User');
+
+		userStore.removeAll();
+		userStore.add({
+			username: username,
+			password: password
+		});
+
+		itemStore.username = username;
+		itemStore.password = password;
+
+		if (this.syncHandler) {
+			this.syncHandler.cancel();
+		} else {
+			this.startSyncing(this);
+		}
+	},
+	disconnect: function() {
+		var itemStore = Ext.getStore('Item'),
+			userStore = Ext.getStore('User');
+
+		if (this.syncHandler) {
+			userStore.removeAll();
+			itemStore.removeAll();
+			itemStore.username = 'nobody';
+			itemStore.password = null;
+			this.syncHandler.cancel();
+		}
+	},
+	startSyncing: function(me) {
+		var me = this,
+			store = Ext.getStore('Item');
+
+		store.remoteDB = new PouchDB('https://' + store.username + ':' + store.password + '@djsauble.cloudant.com/lists');
+		me.syncHandler = store.localDB.sync(store.remoteDB, {
+			live: true,
+			retry: true
+		}).on('change', function (change) {
+			if (change.direction == "pull" && change.change.docs.length > 0) {
+				console.log("Change occurred. Synchronizing.");
+				store.load();
+			}
+		}).on('paused', function (info) {
+		}).on('active', function (info) {
+		}).on('error', function (err) {
+		});
+		me.syncHandler.on('complete', function (info) {
+			store.localDB.destroy().then(function() {
+				store.localDB = new PouchDB('lists');
+				me.syncHandler = null;
+				me.getListPanel().down('button[action=signin]').show();
+				me.getListPanel().down('button[action=signout]').hide();
+				if (store.username && store.password) {
+					me.startSyncing(me);
+				}
+			});
+		});
+		setTimeout(function() {
+			me.getListPanel().down('button[action=signin]').hide();
+			me.getListPanel().down('button[action=signout]').show();	
+		}, 50);
 	}
 });

@@ -658,7 +658,9 @@ Ext.ClassManager.addNameAlternateMappings({
   ],
   "TodoApp.controller.Main": [],
   "TodoApp.model.Item": [],
+  "TodoApp.model.User": [],
   "TodoApp.store.Item": [],
+  "TodoApp.store.User": [],
   "TodoApp.view.Edit": [],
   "TodoApp.view.Image": [],
   "TodoApp.view.List": [],
@@ -666,6 +668,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "TodoApp.view.Main": [],
   "TodoApp.view.Map": [],
   "TodoApp.view.New": [],
+  "TodoApp.view.SignIn": [],
   "TodoApp.view.TodoListItem": []
 });
 
@@ -1389,7 +1392,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.WindowsPhone": [],
   "TodoApp.controller.Main": [],
   "TodoApp.model.Item": [],
+  "TodoApp.model.User": [],
   "TodoApp.store.Item": [],
+  "TodoApp.store.User": [],
   "TodoApp.view.Edit": [
     "widget.todo-edit"
   ],
@@ -1410,6 +1415,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "TodoApp.view.New": [
     "widget.todo-new"
+  ],
+  "TodoApp.view.SignIn": [
+    "widget.todo-sign-in"
   ],
   "TodoApp.view.TodoListItem": [
     "widget.todolistitem"

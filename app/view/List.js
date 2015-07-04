@@ -12,11 +12,24 @@ Ext.define('TodoApp.view.List', {
 	            docked: 'top',
 	            xtype: 'titlebar',
 	            title: 'Things to do',
-	            items: {
-	                align: 'right',
-	                text: 'Add',
-	                action: 'new'
-	            }
+	            items: [
+	            	{
+	            		align: 'left',
+	            		text: 'Sign in',
+	            		action: 'signin'
+	            	},
+	            	{
+	            		align: 'left',
+	            		text: 'Sign out',
+	            		action: 'signout',
+	            		hidden: true
+	            	},
+		            {
+		                align: 'right',
+		                text: 'Add',
+		                action: 'new'
+		            }
+	            ]
 	        },
 	        {
 	        	xtype: 'dataview',
