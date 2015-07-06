@@ -1,4 +1,4 @@
-Ext.define('TodoApp.view.New', {
+Ext.define('TodoApp.view.item.New', {
     extend: 'Ext.Panel',
     alias: 'widget.todo-new',
     requires: [
@@ -6,8 +6,8 @@ Ext.define('TodoApp.view.New', {
         'Ext.form.Panel',
         'Ext.form.FieldSet',
         'Ext.field.Radio',
-        'TodoApp.view.Image',
-        'TodoApp.view.Map'
+        'TodoApp.view.item.Image',
+        'TodoApp.view.item.Map'
     ],
 
     config: {

@@ -1,8 +1,7 @@
 Ext.define('TodoApp.model.Item', {
 	extend: 'Ext.data.Model',
 	requires: [
-		'Ext.data.identifier.Uuid',
-		'Ext.data.proxy.LocalStorage'
+		'Ext.data.identifier.Uuid'
 	],
 	config: {
 		identifier: {
@@ -16,8 +15,8 @@ Ext.define('TodoApp.model.Item', {
 			{ name: 'longitude', type: 'float' }
 		],
 		proxy: {
-        	type: 'localstorage',
-        	id: 'todoapp-items'
-        }
+	    	type: 'localstorage',
+	    	id: 'todoapp-items'
+	    }
 	}
 });

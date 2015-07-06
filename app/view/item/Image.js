@@ -1,4 +1,4 @@
-Ext.define('TodoApp.view.Image', {
+Ext.define('TodoApp.view.item.Image', {
 	extend: 'Ext.form.FieldSet',
 	alias: 'widget.todo-image',
 

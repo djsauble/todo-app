@@ -658,18 +658,23 @@ Ext.ClassManager.addNameAlternateMappings({
   ],
   "TodoApp.controller.Main": [],
   "TodoApp.model.Item": [],
+  "TodoApp.model.List": [],
   "TodoApp.model.User": [],
   "TodoApp.store.Item": [],
+  "TodoApp.store.List": [],
   "TodoApp.store.User": [],
-  "TodoApp.view.Edit": [],
-  "TodoApp.view.Image": [],
-  "TodoApp.view.List": [],
-  "TodoApp.view.Location": [],
   "TodoApp.view.Main": [],
-  "TodoApp.view.Map": [],
-  "TodoApp.view.New": [],
   "TodoApp.view.SignIn": [],
-  "TodoApp.view.TodoListItem": []
+  "TodoApp.view.item.DataItem": [],
+  "TodoApp.view.item.Edit": [],
+  "TodoApp.view.item.Image": [],
+  "TodoApp.view.item.Location": [],
+  "TodoApp.view.item.Map": [],
+  "TodoApp.view.item.New": [],
+  "TodoApp.view.list.DataItem": [],
+  "TodoApp.view.list.List": [],
+  "TodoApp.view.list.Lists": [],
+  "TodoApp.view.list.New": []
 });
 
 Ext.ClassManager.addNameAliasMappings({
@@ -1392,35 +1397,46 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.WindowsPhone": [],
   "TodoApp.controller.Main": [],
   "TodoApp.model.Item": [],
+  "TodoApp.model.List": [],
   "TodoApp.model.User": [],
   "TodoApp.store.Item": [],
+  "TodoApp.store.List": [],
   "TodoApp.store.User": [],
-  "TodoApp.view.Edit": [
-    "widget.todo-edit"
-  ],
-  "TodoApp.view.Image": [
-    "widget.todo-image"
-  ],
-  "TodoApp.view.List": [
-    "widget.todo-list"
-  ],
-  "TodoApp.view.Location": [
-    "widget.todo-location"
-  ],
   "TodoApp.view.Main": [
     "widget.todo-main"
-  ],
-  "TodoApp.view.Map": [
-    "widget.todo-map"
-  ],
-  "TodoApp.view.New": [
-    "widget.todo-new"
   ],
   "TodoApp.view.SignIn": [
     "widget.todo-sign-in"
   ],
-  "TodoApp.view.TodoListItem": [
-    "widget.todolistitem"
+  "TodoApp.view.item.DataItem": [
+    "widget.todo-dataitem"
+  ],
+  "TodoApp.view.item.Edit": [
+    "widget.todo-edit"
+  ],
+  "TodoApp.view.item.Image": [
+    "widget.todo-image"
+  ],
+  "TodoApp.view.item.Location": [
+    "widget.todo-location"
+  ],
+  "TodoApp.view.item.Map": [
+    "widget.todo-map"
+  ],
+  "TodoApp.view.item.New": [
+    "widget.todo-new"
+  ],
+  "TodoApp.view.list.DataItem": [
+    "widget.todo-list-dataitem"
+  ],
+  "TodoApp.view.list.List": [
+    "widget.todo-list"
+  ],
+  "TodoApp.view.list.Lists": [
+    "widget.todo-lists"
+  ],
+  "TodoApp.view.list.New": [
+    "widget.todo-list-new"
   ]
 });
 

@@ -1,6 +1,6 @@
-Ext.define('TodoApp.view.List', {
+Ext.define('TodoApp.view.list.Lists', {
     extend: 'Ext.Panel',
-    alias: 'widget.todo-list',
+    alias: 'widget.todo-lists',
     requires: [
         'Ext.TitleBar',
         'Ext.dataview.DataView'
@@ -11,7 +11,7 @@ Ext.define('TodoApp.view.List', {
 	        {
 	            docked: 'top',
 	            xtype: 'titlebar',
-	            title: 'Things to do',
+	            title: 'My Lists',
 	            items: [
 	            	{
 	            		align: 'left',
@@ -35,15 +35,15 @@ Ext.define('TodoApp.view.List', {
 	        	xtype: 'dataview',
 	        	height: '100%',
 	        	useComponents: true,
-	        	defaultType: 'todolistitem',
-            	store: 'Item'
+	        	defaultType: 'todo-list-dataitem',
+            	store: 'List'
 	        }
     	]
     },
 
     initialize: function() {
     	// Autoload appears to be broken for dataviews
-    	Ext.getStore('Item').load();
+    	Ext.getStore('List').load();
 
     	this.callParent();
     }

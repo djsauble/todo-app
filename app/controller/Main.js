@@ -3,22 +3,39 @@ Ext.define('TodoApp.controller.Main', {
 	config: {
 		views: [
 			'SignIn',
-			'List',
-			'New',
-			'Edit',
-			'Location',
-			'TodoListItem'
+			'TodoApp.view.list.Lists',
+			'TodoApp.view.list.New',
+			'TodoApp.view.list.DataItem',
+			'TodoApp.view.list.List',
+			'TodoApp.view.item.New',
+			'TodoApp.view.item.Edit',
+			'TodoApp.view.item.Location',
+			'TodoApp.view.item.DataItem'
 		],
 		models: [
 			'User',
-			'Item'
+			'Item',
+			'List'
 		],
 		stores: [
 			'User',
-			'Item'
+			'Item',
+			'List'
 		],
 		refs: {
 			mainPanel: 'todo-main',
+			listsPanel: {
+				selector: 'todo-lists',
+				xtype: 'todo-lists',
+				autoCreate: true
+			},
+			listsDataView: 'todo-lists dataview',
+			newListPanel: {
+				selector: 'todo-list-new',
+				xtype: 'todo-list-new',
+				autoCreate: true
+			},
+			newListForm: 'todo-list-new formpanel',
 			listPanel: {
 				selector: 'todo-list',
 				xtype: 'todo-list',
@@ -51,14 +68,32 @@ Ext.define('TodoApp.controller.Main', {
 		},
 		control: {
 			// HACK: Sencha says you shouldn’t define listeners in the config object, so don’t do this
-			'todo-list button[action=new]': {
-				tap: 'showNewView'
-			},
-			'todo-list button[action=signin]': {
+			'todo-lists button[action=signin]': {
 				tap: 'showSignInView'
 			},
-			'todo-list button[action=signout]': {
+			'todo-lists button[action=signout]': {
 				tap: 'signOut'
+			},
+			'todo-lists button[action=new]': {
+				tap: 'showNewListView'
+			},
+			'todo-lists button[action=edit]': {
+				tap: 'editList'
+			},
+			'todo-lists button[action=delete]': {
+				tap: 'deleteList'
+			},
+			'todo-list-new button[action=back]': {
+				tap: 'showListsView'
+			},
+			'todo-list-new button[action=create]': {
+				tap: 'createList',
+			},
+			'todo-list button[action=back]': {
+				tap: 'goBack'
+			},
+			'todo-list button[action=new]': {
+				tap: 'showNewView'
 			},
 			'todo-list button[action=edit]': {
 				tap: 'editTodoItem'
@@ -98,7 +133,7 @@ Ext.define('TodoApp.controller.Main', {
 	syncHandler: null,
 	init: function() {
 		var me = this,
-			store = Ext.getStore('Item'),
+			store = Ext.getStore('List'),
 			record = Ext.getStore('User').first(),
 			data;
 
@@ -116,6 +151,16 @@ Ext.define('TodoApp.controller.Main', {
 		store.add(this.getNewForm().getValues());
 		
 		this.showListView();
+	},
+	createList: function(button, e, eOpts) {
+		var store = Ext.getStore('List');
+
+		var model = new TodoApp.model.List(this.getNewListForm().getValues());
+		model.setId(store.username + '_' + model.getId());
+		model.set('owner', store.username);
+		store.add(model);
+
+		this.showListsView();
 	},
 	editTodoItem: function(button, e, eOpts) {
 		var store = this.getListDataView().getStore(),
@@ -140,10 +185,36 @@ Ext.define('TodoApp.controller.Main', {
 
 		this.showEditView();
 	},
+	editList: function(button, e, eOpts) {
+		var listStore = Ext.getStore('List'),
+			record = listStore.findRecord('_id', button.getData()),
+			items = record.getData().items,
+			listPanel = this.getListPanel(),
+			listDataView = this.getListDataView(),
+			itemStore = Ext.getStore('Item');
+
+		listStore.currentListId = button.getData();
+		itemStore.currentListStore = listStore;
+		itemStore.currentListRecord = record;
+		itemStore.removeAll();
+		if (items) {
+			itemStore.add(items);
+		}
+
+		listPanel.down('titlebar').setTitle(record.get('name'));
+		this.showListView();
+	},
 	deleteTodoItem: function(button, e, eOpts) {
 		var dataview = this.getListDataView(),
 			store = dataview.getStore(),
 			record = store.findRecord('id', button.getData()).erase();
+
+		store.remove(record);
+	},
+	deleteList: function(button, e, eOpts) {
+		var dataview = this.getListsDataView(),
+			store = dataview.getStore(),
+			record = store.findRecord('_id', button.getData()).erase();
 
 		store.remove(record);
 	},
@@ -181,6 +252,18 @@ Ext.define('TodoApp.controller.Main', {
 
 		this.loadMapResource();
 	},
+	showListsView: function() {
+		this.showView(this.getListsPanel(), 0);
+	},
+	showNewListView: function() {
+		var newListPanel = this.getNewListPanel(),
+			newListForm = this.getNewListForm();
+
+		// Reset the new panel
+		newListForm.reset();
+
+		this.showView(newListPanel, 1);
+	},
 	showNewView: function() {
 		var newPanel = this.getNewPanel(),
 			newForm = this.getNewForm();
@@ -191,19 +274,19 @@ Ext.define('TodoApp.controller.Main', {
 		newForm.down('todo-image').down('button[text=Select]').setHidden(false);
 		newForm.down('todo-image').down('button[text=Remove]').setHidden(true);
 
-		this.showView(newPanel, 1);
+		this.showView(newPanel, 2);
 	},
 	showSignInView: function() {
 		this.showView(this.getSignInPanel(), 1);
 	},
 	showEditView: function() {
-		this.showView(this.getEditPanel(), 1);
+		this.showView(this.getEditPanel(), 2);
 	},
 	showListView: function() {
-		this.showView(this.getListPanel(), 0);
+		this.showView(this.getListPanel(), 1);
 	},
 	showLocationView: function() {
-		this.showView(this.getLocationPanel(), 2);
+		this.showView(this.getLocationPanel(), 3);
 	},
 	setLocation: function() {
 		var panel = this.getLocationPanel(),
@@ -269,13 +352,13 @@ Ext.define('TodoApp.controller.Main', {
 		var values = this.getSignInForm().getValues();
 		this.getSignInForm().down('passwordfield').reset();
 		this.connect(values.username, values.password);
-		this.showListView();
+		this.showListsView();
 	},
 	signOut: function() {
 		this.disconnect();
 	},
 	connect: function(username, password) {
-		var itemStore = Ext.getStore('Item'),
+		var listStore = Ext.getStore('List'),
 			userStore = Ext.getStore('User');
 
 		userStore.removeAll();
@@ -284,8 +367,8 @@ Ext.define('TodoApp.controller.Main', {
 			password: password
 		});
 
-		itemStore.username = username;
-		itemStore.password = password;
+		listStore.username = username;
+		listStore.password = password;
 
 		if (this.syncHandler) {
 			this.syncHandler.cancel();
@@ -294,20 +377,20 @@ Ext.define('TodoApp.controller.Main', {
 		}
 	},
 	disconnect: function() {
-		var itemStore = Ext.getStore('Item'),
+		var listStore = Ext.getStore('List'),
 			userStore = Ext.getStore('User');
 
 		if (this.syncHandler) {
 			userStore.removeAll();
-			itemStore.removeAll();
-			itemStore.username = 'nobody';
-			itemStore.password = null;
+			listStore.removeAll();
+			listStore.username = 'nobody';
+			listStore.password = null;
 			this.syncHandler.cancel();
 		}
 	},
 	startSyncing: function(me) {
 		var me = this,
-			store = Ext.getStore('Item');
+			store = Ext.getStore('List');
 
 		store.remoteDB = new PouchDB('https://' + store.username + ':' + store.password + '@djsauble.cloudant.com/lists');
 		me.syncHandler = store.localDB.sync(store.remoteDB, {
@@ -326,16 +409,16 @@ Ext.define('TodoApp.controller.Main', {
 			store.localDB.destroy().then(function() {
 				store.localDB = new PouchDB('lists');
 				me.syncHandler = null;
-				me.getListPanel().down('button[action=signin]').show();
-				me.getListPanel().down('button[action=signout]').hide();
+				me.getListsPanel().down('button[action=signin]').show();
+				me.getListsPanel().down('button[action=signout]').hide();
 				if (store.username && store.password) {
 					me.startSyncing(me);
 				}
 			});
 		});
 		setTimeout(function() {
-			me.getListPanel().down('button[action=signin]').hide();
-			me.getListPanel().down('button[action=signout]').show();	
+			me.getListsPanel().down('button[action=signin]').hide();
+			me.getListsPanel().down('button[action=signout]').show();	
 		}, 50);
 	}
 });

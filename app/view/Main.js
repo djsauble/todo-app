@@ -4,7 +4,7 @@ Ext.define('TodoApp.view.Main', {
     fullscreen: true,
     config: {
         layout: 'card',
-        items: { xtype: 'todo-list' }
+        items: { xtype: 'todo-lists' }
     },
     activeIndex: 0
 });

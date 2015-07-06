@@ -1,4 +1,4 @@
-Ext.define('TodoApp.view.Location', {
+Ext.define('TodoApp.view.item.Location', {
 	extend: 'Ext.Panel',
 	alias: 'widget.todo-location',
 	requires: [

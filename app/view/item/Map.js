@@ -1,4 +1,4 @@
-Ext.define('TodoApp.view.Map', {
+Ext.define('TodoApp.view.item.Map', {
 	extend: 'Ext.form.FieldSet',
 	alias: 'widget.todo-map',
 	requires: [

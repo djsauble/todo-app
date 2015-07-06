@@ -1,4 +1,4 @@
-Ext.define('TodoApp.view.Edit', {
+Ext.define('TodoApp.view.item.Edit', {
     extend: 'Ext.Panel',
     alias: 'widget.todo-edit',
     requires: [
@@ -7,8 +7,8 @@ Ext.define('TodoApp.view.Edit', {
         'Ext.form.FieldSet',
         'Ext.field.Radio',
         'Ext.field.Hidden',
-        'TodoApp.view.Image',
-        'TodoApp.view.Map'
+        'TodoApp.view.item.Image',
+        'TodoApp.view.item.Map'
     ],
 
     config: {

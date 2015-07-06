@@ -1,6 +1,6 @@
-Ext.define('TodoApp.view.TodoListItem', {
+Ext.define('TodoApp.view.item.DataItem', {
 	extend: 'Ext.dataview.component.DataItem',
-	alias: 'widget.todolistitem',
+	alias: 'widget.todo-dataitem',
 	requires: [
 		'Ext.Label'
 	],
