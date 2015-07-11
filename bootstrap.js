@@ -657,14 +657,19 @@ Ext.ClassManager.addNameAlternateMappings({
     "Ext.viewport.WP"
   ],
   "TodoApp.controller.Main": [],
+  "TodoApp.model.Collaborator": [],
   "TodoApp.model.Item": [],
   "TodoApp.model.List": [],
   "TodoApp.model.User": [],
+  "TodoApp.store.Collaborator": [],
   "TodoApp.store.Item": [],
   "TodoApp.store.List": [],
   "TodoApp.store.User": [],
   "TodoApp.view.Main": [],
   "TodoApp.view.SignIn": [],
+  "TodoApp.view.collaborator.DataItem": [],
+  "TodoApp.view.collaborator.List": [],
+  "TodoApp.view.collaborator.New": [],
   "TodoApp.view.item.DataItem": [],
   "TodoApp.view.item.Edit": [],
   "TodoApp.view.item.Image": [],
@@ -1396,9 +1401,11 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.Viewport": [],
   "Ext.viewport.WindowsPhone": [],
   "TodoApp.controller.Main": [],
+  "TodoApp.model.Collaborator": [],
   "TodoApp.model.Item": [],
   "TodoApp.model.List": [],
   "TodoApp.model.User": [],
+  "TodoApp.store.Collaborator": [],
   "TodoApp.store.Item": [],
   "TodoApp.store.List": [],
   "TodoApp.store.User": [],
@@ -1407,6 +1414,15 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "TodoApp.view.SignIn": [
     "widget.todo-sign-in"
+  ],
+  "TodoApp.view.collaborator.DataItem": [
+    "widget.todo-collaborator-dataitem"
+  ],
+  "TodoApp.view.collaborator.List": [
+    "widget.todo-collaborator-list"
+  ],
+  "TodoApp.view.collaborator.New": [
+    "widget.todo-collaborator-new"
   ],
   "TodoApp.view.item.DataItem": [
     "widget.todo-dataitem"

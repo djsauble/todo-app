@@ -10,17 +10,22 @@ Ext.define('TodoApp.controller.Main', {
 			'TodoApp.view.item.New',
 			'TodoApp.view.item.Edit',
 			'TodoApp.view.item.Location',
-			'TodoApp.view.item.DataItem'
+			'TodoApp.view.item.DataItem',
+			'TodoApp.view.collaborator.List',
+			'TodoApp.view.collaborator.New',
+			'TodoApp.view.collaborator.DataItem'
 		],
 		models: [
 			'User',
 			'Item',
-			'List'
+			'List',
+			'Collaborator'
 		],
 		stores: [
 			'User',
 			'Item',
-			'List'
+			'List',
+			'Collaborator'
 		],
 		refs: {
 			mainPanel: 'todo-main',
@@ -42,6 +47,18 @@ Ext.define('TodoApp.controller.Main', {
 				autoCreate: true
 			},
 			listDataView: 'todo-list dataview',
+			collaboratorsPanel: {
+				selector: 'todo-collaborator-list',
+				xtype: 'todo-collaborator-list',
+				autoCreate: true
+			},
+			collaboratorsDataView: 'todo-collaborator-list dataview',
+			newCollaboratorPanel: {
+				selector: 'todo-collaborator-new',
+				xtype: 'todo-collaborator-new',
+				autoCreate: true
+			},
+			newCollaboratorForm: 'todo-collaborator-new formpanel',
 			newPanel: {
 				selector: 'todo-new',
 				xtype: 'todo-new',
@@ -77,6 +94,9 @@ Ext.define('TodoApp.controller.Main', {
 			'todo-lists button[action=new]': {
 				tap: 'showNewListView'
 			},
+			'todo-lists button[action=share]': {
+				tap: 'shareList',
+			},
 			'todo-lists button[action=edit]': {
 				tap: 'editList'
 			},
@@ -100,6 +120,21 @@ Ext.define('TodoApp.controller.Main', {
 			},
 			'todo-list button[action=delete]': {
 				tap: 'deleteTodoItem'
+			},
+			'todo-collaborator-list button[action=back]': {
+				tap: 'goBack'
+			},
+			'todo-collaborator-list button[action=add]': {
+				tap: 'showNewCollaboratorView'
+			},
+			'todo-collaborator-list button[action=delete]': {
+				tap: 'deleteCollaborator'
+			},
+			'todo-collaborator-new button[action=back]': {
+				tap: 'goback'
+			},
+			'todo-collaborator-new button[action=share]': {
+				tap: 'createCollaborator'
 			},
 			'todo-new button[action=create]': {
 				tap: 'createTodoItem'
@@ -151,6 +186,13 @@ Ext.define('TodoApp.controller.Main', {
 		store.add(this.getNewForm().getValues());
 		
 		this.showListView();
+	},
+	createCollaborator: function(button, e, eOpts) {
+		var store = Ext.getStore('Collaborator');
+
+		store.add(this.getNewCollaboratorForm().getValues());
+
+		this.showCollaboratorsView();
 	},
 	createList: function(button, e, eOpts) {
 		var store = Ext.getStore('List');
@@ -204,8 +246,37 @@ Ext.define('TodoApp.controller.Main', {
 		listPanel.down('titlebar').setTitle(record.get('name'));
 		this.showListView();
 	},
+	shareList: function(button, e, eOpts) {
+		var listStore = Ext.getStore('List'),
+			record = listStore.findRecord('_id', button.getData()),
+			collaborators = record.getData().collaborators,
+			collaboratorsPanel = this.getCollaboratorsPanel(),
+			collaboratorsDataView = this.getCollaboratorsDataView(),
+			collaboratorStore = Ext.getStore('Collaborator');
+
+		listStore.currentListId = button.getData();
+		collaboratorStore.currentListStore = listStore;
+		collaboratorStore.currentListRecord = record;
+		collaboratorStore.removeAll();
+		if (collaborators) {
+			collaboratorStore.add(collaborators.map(
+				function(c) {
+					return {id: c}
+				}
+			));
+		}
+
+		this.showCollaboratorsView();
+	},
 	deleteTodoItem: function(button, e, eOpts) {
 		var dataview = this.getListDataView(),
+			store = dataview.getStore(),
+			record = store.findRecord('id', button.getData()).erase();
+
+		store.remove(record);
+	},
+	deleteCollaborator: function(button, e, eOpts) {
+		var dataview = this.getCollaboratorsDataView(),
 			store = dataview.getStore(),
 			record = store.findRecord('id', button.getData()).erase();
 
@@ -255,6 +326,9 @@ Ext.define('TodoApp.controller.Main', {
 	showListsView: function() {
 		this.showView(this.getListsPanel(), 0);
 	},
+	showCollaboratorsView: function() {
+		this.showView(this.getCollaboratorsPanel(), 1);
+	},
 	showNewListView: function() {
 		var newListPanel = this.getNewListPanel(),
 			newListForm = this.getNewListForm();
@@ -263,6 +337,9 @@ Ext.define('TodoApp.controller.Main', {
 		newListForm.reset();
 
 		this.showView(newListPanel, 1);
+	},
+	showNewCollaboratorView: function() {
+		this.showView(this.getNewCollaboratorPanel(), 2);
 	},
 	showNewView: function() {
 		var newPanel = this.getNewPanel(),

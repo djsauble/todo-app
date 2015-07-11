@@ -42,16 +42,30 @@ Ext.define('TodoApp.store.List', {
   		me.localDB.allDocs({
 					include_docs: true,
 					attachments: true,
-					startkey: me.username,
-					endkey: me.username + '\uffff'
+					startkey: '_design/\uffff',
 				}, function (error, result) {
-					func(result);
+					func(result.rows.filter(
+						function(e) {
+							if (e.doc.owner == me.username) {
+								return true;
+							}
+							if (!e.doc.collaborators) {
+								return false;
+							}
+							return e.doc.collaborators.some(
+								function(c) {
+									return c == me.username;
+								}
+							);
+						}
+					).map(function(e) {
+						return e.doc;
+					}));
 				});
   	},
   	onLoad: function(store, records, successful, operation) {
-		this.doWithDocs(function(result) {
-			var toadd = [],
-				lists = result.rows.map(function(r) { return r.doc; });
+		this.doWithDocs(function(lists) {
+			var toadd = [];
 			for (var i = 0; i < records.length; ++i) {
 				var data = records[i].getData();
 				if (lists.every(function(l) { return l._id != data._id })) {
@@ -71,9 +85,8 @@ Ext.define('TodoApp.store.List', {
 		});
 	},
 	onAddRecords: function(store, records) {
-		this.doWithDocs(function(result) {
-			var toadd = [],
-				lists = result.rows.map(function(r) { return r.doc; });
+		this.doWithDocs(function(lists) {
+			var toadd = [];
 			for (var i = 0; i < records.length; ++i) {
 				if (lists.every(function(l) { return l._id != records[i].getData()._id })) {
 					toadd.push(records[i].getData());
@@ -86,8 +99,7 @@ Ext.define('TodoApp.store.List', {
 		});
 	},
 	onRemoveRecords: function(store, records, indices) {
-		this.doWithDocs(function(result) {
-			var lists = result.rows.map(function(r) { return r.doc; });
+		this.doWithDocs(function(lists) {
 			for (var i = 0; i < records.length; ++i) {
 				lists = lists.filter(function(e) { return e._id == records[i].getData()._id; });
 			}

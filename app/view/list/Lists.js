@@ -11,7 +11,7 @@ Ext.define('TodoApp.view.list.Lists', {
 	        {
 	            docked: 'top',
 	            xtype: 'titlebar',
-	            title: 'My Lists',
+	            title: 'Lists',
 	            items: [
 	            	{
 	            		align: 'left',

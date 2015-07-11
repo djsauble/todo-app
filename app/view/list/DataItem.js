@@ -9,6 +9,11 @@ Ext.define('TodoApp.view.list.DataItem', {
 		name: {
 			flex: 1
 		},
+		share: {
+			text: 'Share',
+			action: 'share',
+			margin: '0 7px 0 0'
+		},
 		edit: {
 			text: 'Edit',
 			action: 'edit',
@@ -26,6 +31,9 @@ Ext.define('TodoApp.view.list.DataItem', {
 		dataMap: {
 			getName: {
 				setHtml: 'name'
+			},
+			getShare: {
+				setData: '_id'
 			},
 			getEdit: {
 				setData: '_id'
@@ -47,7 +55,17 @@ Ext.define('TodoApp.view.list.DataItem', {
 			this.remove(oldName);
 		}
 	},
-
+	applyShare: function(config) {
+		return Ext.factory(config, 'Ext.Button', this.getShare());
+	},
+	updateShare: function(newButton, oldButton) {
+		if (newButton) {
+			this.add(newButton);
+		}
+		if (oldButton) {
+			this.remove(oldButton);
+		}
+	},
 	applyEdit: function(config) {
 		return Ext.factory(config, 'Ext.Button', this.getEdit());
 	},
@@ -59,7 +77,6 @@ Ext.define('TodoApp.view.list.DataItem', {
 			this.remove(oldButton);
 		}
 	},
-
 	applyDestroy: function(config) {
 		return Ext.factory(config, 'Ext.Button', this.getDestroy());
 	},
