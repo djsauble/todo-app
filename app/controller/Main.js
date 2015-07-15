@@ -472,15 +472,24 @@ Ext.define('TodoApp.controller.Main', {
 		store.remoteDB = new PouchDB('https://' + store.username + ':' + store.password + '@djsauble.cloudant.com/lists');
 		me.syncHandler = store.localDB.sync(store.remoteDB, {
 			live: true,
-			retry: true
+			retry: true,
+			back_off_function: function (delay) {
+				me.setIndicator(false);
+				return 1000;
+			}
 		}).on('change', function (change) {
+			console.log("Sync change");
 			if (change.direction == "pull" && change.change.docs.length > 0) {
 				console.log("Change occurred. Synchronizing.");
 				store.load();
 			}
 		}).on('paused', function (info) {
+			console.log("Sync paused");
+			me.setIndicator(true);
 		}).on('active', function (info) {
+			console.log("Sync active");
 		}).on('error', function (err) {
+			console.log("Sync error");
 		});
 		me.syncHandler.on('complete', function (info) {
 			store.localDB.destroy().then(function() {
@@ -497,5 +506,15 @@ Ext.define('TodoApp.controller.Main', {
 			me.getListsPanel().down('button[action=signin]').hide();
 			me.getListsPanel().down('button[action=signout]').show();	
 		}, 50);
+	},
+	online: null,
+	setIndicator: function(online) {
+		var me = this,
+			message = online ? "online :-)" : "offline :-(";
+
+		if (me.online !== online) {
+			me.getListsPanel().down('toolbar[docked=bottom]').setTitle(message);
+			me.online = online;
+		}
 	}
 });
