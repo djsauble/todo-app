@@ -28,7 +28,8 @@ Ext.define('TodoApp.controller.Main', {
 			'Collaborator'
 		],
 		refs: {
-			mainPanel: 'todo-main',
+			main: 'todo-main',
+			mainPanel: '#todo-main-panel',
 			listsPanel: {
 				selector: 'todo-lists',
 				xtype: 'todo-lists',
@@ -513,7 +514,7 @@ Ext.define('TodoApp.controller.Main', {
 			message = online ? "online :-)" : "offline :-(";
 
 		if (me.online !== online) {
-			me.getListsPanel().down('toolbar[docked=bottom]').setTitle(message);
+			me.getMain().down('toolbar[docked=bottom]').setTitle(message);
 			me.online = online;
 		}
 	}

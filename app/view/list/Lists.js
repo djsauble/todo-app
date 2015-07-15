@@ -32,10 +32,6 @@ Ext.define('TodoApp.view.list.Lists', {
 	            ]
 	        },
 	        {
-	        	docked: 'bottom',
-	        	xtype: 'toolbar'
-	        },
-	        {
 	        	xtype: 'dataview',
 	        	height: '100%',
 	        	useComponents: true,
