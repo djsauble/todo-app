@@ -475,7 +475,7 @@ Ext.define('TodoApp.controller.Main', {
 			live: true,
 			retry: true,
 			back_off_function: function (delay) {
-				me.setIndicator(false);
+				me.setIndicator("offline :-(");
 				return 1000;
 			}
 		}).on('change', function (change) {
@@ -486,9 +486,10 @@ Ext.define('TodoApp.controller.Main', {
 			}
 		}).on('paused', function (info) {
 			console.log("Sync paused");
-			me.setIndicator(true);
+			me.setIndicator("online :-)");
 		}).on('active', function (info) {
 			console.log("Sync active");
+			me.setIndicator("Syncing…");
 		}).on('error', function (err) {
 			console.log("Sync error");
 		});
@@ -508,14 +509,13 @@ Ext.define('TodoApp.controller.Main', {
 			me.getListsPanel().down('button[action=signout]').show();	
 		}, 50);
 	},
-	online: null,
-	setIndicator: function(online) {
-		var me = this,
-			message = online ? "online :-)" : "offline :-(";
+	message: null,
+	setIndicator: function(message) {
+		var me = this;
 
-		if (me.online !== online) {
+		if (me.message != message) {
 			me.getMain().down('toolbar[docked=bottom]').setTitle(message);
-			me.online = online;
+			me.message = message;
 		}
 	}
 });
