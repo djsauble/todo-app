@@ -13,19 +13,22 @@ Ext.define('TodoApp.controller.Main', {
 			'TodoApp.view.item.DataItem',
 			'TodoApp.view.collaborator.List',
 			'TodoApp.view.collaborator.New',
-			'TodoApp.view.collaborator.DataItem'
+			'TodoApp.view.collaborator.DataItem',
+			'Ext.util.Geolocation'
 		],
 		models: [
 			'User',
 			'Item',
 			'List',
-			'Collaborator'
+			'Collaborator',
+			'Position'
 		],
 		stores: [
 			'User',
 			'Item',
 			'List',
-			'Collaborator'
+			'Collaborator',
+			'Position'
 		],
 		refs: {
 			main: 'todo-main',
@@ -166,6 +169,7 @@ Ext.define('TodoApp.controller.Main', {
 			}
 		}
 	},
+	geo: null,
 	syncHandler: null,
 	init: function() {
 		var me = this,
@@ -180,6 +184,92 @@ Ext.define('TodoApp.controller.Main', {
 			store.username = data.username;
 			me.connect(data.username, data.password);
 		}
+
+		me.predictBandwidth();
+	},
+	predictBandwidth: function() {
+		var me = this;
+		me.geo = Ext.create('Ext.util.Geolocation', {
+			listeners: {
+				locationupdate: function(geo) {
+					console.log("Update location");
+					// Are there any points in the database?
+					var store = Ext.getStore('Position');
+					console.log(store.getCount() + " points in database");
+					if (!store.getCount()) {
+						store.add({
+							latitude: geo._latitude,
+							longitude: geo._longitude,
+							offline: me.offline
+						});
+						return;
+					}
+
+					// Is the current location more than 10 meters away from the closest location? Save it.
+					var records = store.getData().all,
+						closest = null,
+						closestDistance = null;
+					records.forEach(function(e) {
+						var distance = Math.sqrt(Math.pow((e.data.latitude - geo._latitude), 2) + Math.pow((e.data.longitude - geo._longitude), 2));
+						if (!closest || distance < closestDistance) {
+							closest = e.data;
+							closestDistance = distance;
+							return;
+						}
+					});
+					console.log(closestDistance);
+					if (closestDistance > 10) {
+						store.add({
+							latitude: geo._longitude,
+							longitude: geo._latitude,
+							offline: me.offline
+						});
+					}
+
+					// Is the current location less than 10 meters away from the closest location? Update it.
+					if (closestDistance < 10 && closest.online != me.online) {
+						var record = store.findRecord('id', closest.id);
+						record.set('online', me.online);
+						store.sync();
+					}
+
+					// Is the current positioning information accurate enough?
+					if (!geo._accuracy || geo._accuracy > 50)
+						return;
+
+					// Is the current speed significant enough?
+					if (!geo._speed || geo._speed < 1)
+						return;
+
+					// Determine where user will be in 10 seconds
+					var R = 6367444.7, // Earth's radius in meters
+						distance = geo._speed * 10, // Current velocity times 10 (seconds)
+						dx = distance * (Math.sin(geo._heading * Math.PI / 180)),
+						dy = distance * (-Math.cos(geo._heading * Math.PI / 180)),
+						dlng = dx / (R * Math.cos(geo._latitude)),
+						dlat = dy / R
+						newLng = geo._longitude + dlng,
+						newLat = geo._latitude + dlat;
+
+					// What is the closest point to that location? (nearest neighbor search)
+					closest = null;
+					closestDistance = null;
+					records.forEach(function(e) {
+						var distance = Math.sqrt(Math.pow((e.data.latitude - newLat), 2) + Math.pow((e.data.longitude - newLng), 2));
+						if (!closest || distance < closestDistance) {
+							closest = e.data;
+							closestDistance = distance;
+							return;
+						}
+					});
+
+					// Was the closest point offline? Post a warning…
+					if (!closest.online) {
+						this.setIndicator("Going offline soon. :-/");
+					}
+				}
+			}
+		});
 	},
 	createTodoItem: function(button, e, eOpts) {
 		var store = Ext.getStore('Item');
@@ -475,6 +565,7 @@ Ext.define('TodoApp.controller.Main', {
 			live: true,
 			retry: true,
 			back_off_function: function (delay) {
+				me.online = false;
 				me.setIndicator("offline :-(");
 				return 1000;
 			}
@@ -486,6 +577,7 @@ Ext.define('TodoApp.controller.Main', {
 			}
 		}).on('paused', function (info) {
 			console.log("Sync paused");
+			me.online = true;
 			me.setIndicator("online :-)");
 		}).on('active', function (info) {
 			console.log("Sync active");
@@ -509,6 +601,7 @@ Ext.define('TodoApp.controller.Main', {
 			me.getListsPanel().down('button[action=signout]').show();	
 		}, 50);
 	},
+	online: null,
 	message: null,
 	setIndicator: function(message) {
 		var me = this;
