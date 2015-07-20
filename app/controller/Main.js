@@ -186,16 +186,18 @@ Ext.define('TodoApp.controller.Main', {
 		}
 
 		me.predictBandwidth();
+
+		me.checkForTurbulence();
 	},
 	predictBandwidth: function() {
 		var me = this;
 		me.geo = Ext.create('Ext.util.Geolocation', {
 			listeners: {
 				locationupdate: function(geo) {
-					console.log("Update location");
+					//console.log("Update location");
 					// Are there any points in the database?
 					var store = Ext.getStore('Position');
-					console.log(store.getCount() + " points in database");
+					//console.log(store.getCount() + " points in database");
 					if (!store.getCount()) {
 						store.add({
 							latitude: geo._latitude,
@@ -217,7 +219,7 @@ Ext.define('TodoApp.controller.Main', {
 							return;
 						}
 					});
-					console.log(closestDistance);
+					//console.log(closestDistance);
 					if (closestDistance > 10) {
 						store.add({
 							latitude: geo._longitude,
@@ -270,6 +272,37 @@ Ext.define('TodoApp.controller.Main', {
 				}
 			}
 		});
+	},
+	checkForTurbulence: function() {
+		var me = this;
+
+		return setInterval(function() {
+			// Are we online and syncing?
+			if (!me.online || !me.syncStarted || me.message.indexOf('offline soon') !== -1)
+				return;
+
+			// Have we been attempting to synchronize for at least 30 minutes?
+			var duration = (new Date()).getTime() - me.syncStarted;
+			if (duration > 30 * 60 * 1000) {
+				me.setIndicator("Try pigeons?");
+			}
+			// 10 minutes?
+			else if (duration > 10 * 60 * 1000) {
+				me.setIndicator("Are you on GPRS?");
+			}
+			// 1 minute?
+			else if (duration > 60 * 1000) {
+				me.setIndicator("Find faster Internet?");
+			}
+			// 30 seconds?
+			else if (duration > 30 * 1000) {
+				me.setIndicator("Still working…");
+			}
+			// 10 seconds?
+			else if (duration > 10 * 1000) {
+				me.setIndicator("Taking a bit longer…");
+			}
+		}, 1000);
 	},
 	createTodoItem: function(button, e, eOpts) {
 		var store = Ext.getStore('Item');
@@ -556,6 +589,7 @@ Ext.define('TodoApp.controller.Main', {
 			this.syncHandler.cancel();
 		}
 	},
+	syncStarted: null,
 	startSyncing: function(me) {
 		var me = this,
 			store = Ext.getStore('List');
@@ -578,9 +612,11 @@ Ext.define('TodoApp.controller.Main', {
 		}).on('paused', function (info) {
 			console.log("Sync paused");
 			me.online = true;
+			me.syncStarted = null;
 			me.setIndicator("online :-)");
 		}).on('active', function (info) {
 			console.log("Sync active");
+			me.syncStarted = (new Date()).getTime();
 			me.setIndicator("Syncing…");
 		}).on('error', function (err) {
 			console.log("Sync error");
