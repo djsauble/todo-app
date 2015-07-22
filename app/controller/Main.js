@@ -273,6 +273,7 @@ Ext.define('TodoApp.controller.Main', {
 			}
 		});
 	},
+	oneTimeMessage: false,
 	checkForTurbulence: function() {
 		var me = this;
 
@@ -283,8 +284,13 @@ Ext.define('TodoApp.controller.Main', {
 
 			// Have we been attempting to synchronize for at least 30 minutes?
 			var duration = (new Date()).getTime() - me.syncStarted;
-			if (duration > 30 * 60 * 1000) {
-				me.setIndicator("Try pigeons?");
+			if (duration > 30 * 60 * 1000 && me.oneTimeMessage === false) {
+				Ext.Msg.show({
+					title: "Fasten your seatbelt",
+					message: "We've been trying to sync for 30 minutes, but no dice. Your data is safe, but you'll want to connect to better Internet eventually.",
+					buttons: Ext.MessageBox.OK
+				});
+				me.oneTimeMessage = true;
 			}
 			// 10 minutes?
 			else if (duration > 10 * 60 * 1000) {
@@ -299,7 +305,7 @@ Ext.define('TodoApp.controller.Main', {
 				me.setIndicator("Still working…");
 			}
 			// 10 seconds?
-			else if (duration > 10 * 1000) {
+			else if (duration > 10 * 1000 && me.oneTimeMessage === false) {
 				me.setIndicator("Taking a bit longer…");
 			}
 		}, 1000);
@@ -613,6 +619,7 @@ Ext.define('TodoApp.controller.Main', {
 			console.log("Sync paused");
 			me.online = true;
 			me.syncStarted = null;
+			me.oneTimeMessage = false;
 			me.setIndicator("online :-)");
 		}).on('active', function (info) {
 			console.log("Sync active");
