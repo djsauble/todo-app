@@ -657,6 +657,7 @@ Ext.ClassManager.addNameAlternateMappings({
     "Ext.viewport.WP"
   ],
   "TodoApp.controller.Main": [],
+  "TodoApp.controller.Sync": [],
   "TodoApp.model.Collaborator": [],
   "TodoApp.model.Item": [],
   "TodoApp.model.List": [],
@@ -1403,6 +1404,7 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.Viewport": [],
   "Ext.viewport.WindowsPhone": [],
   "TodoApp.controller.Main": [],
+  "TodoApp.controller.Sync": [],
   "TodoApp.model.Collaborator": [],
   "TodoApp.model.Item": [],
   "TodoApp.model.List": [],

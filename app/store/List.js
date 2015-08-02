@@ -12,8 +12,8 @@ Ext.define('TodoApp.store.List', {
   	},
   	remoteDB: null,
   	localDB: null,
+  	localMetaDB: null,
   	username: 'nobody',
-  	password: null,
   	currentListId: null,
   	doWithDoc: function(func) {
   		var me = this;
@@ -44,28 +44,15 @@ Ext.define('TodoApp.store.List', {
 					attachments: true,
 					startkey: '_design/\uffff',
 				}, function (error, result) {
-					func(result.rows.filter(
-						function(e) {
-							if (e.doc.owner == me.username) {
-								return true;
-							}
-							if (!e.doc.collaborators) {
-								return false;
-							}
-							return e.doc.collaborators.some(
-								function(c) {
-									return c == me.username;
-								}
-							);
-						}
-					).map(function(e) {
+					func(result.rows.map(function(e) {
 						return e.doc;
 					}));
 				});
   	},
   	onLoad: function(store, records, successful, operation) {
-		this.doWithDocs(function(lists) {
-			var toadd = [];
+  		var me = this;
+		me.doWithDocs(function(lists) {
+			var liststoadd = [];
 			for (var i = 0; i < records.length; ++i) {
 				var data = records[i].getData();
 				if (lists.every(function(l) { return l._id != data._id })) {
@@ -75,17 +62,35 @@ Ext.define('TodoApp.store.List', {
 						owner: store.username,
 						items: data.items
 					});
-					toadd.push(model);
+					liststoadd.push(model);
 				}
 			}
-			if (toadd.length > 0) {
-				lists = lists.concat(toadd);
+			if (liststoadd.length > 0) {
+				lists = lists.concat(liststoadd);
 			}
 			store.setData(lists);
 		});
+		me.filter([
+			{
+				filterFn: function(e) {
+					if (e.get('owner') == me.username) {
+						return true;
+					}
+					if (!e.get('collaborators')) {
+						return false;
+					}
+					return e.get('collaborators').some(
+						function(c) {
+							return c == me.username;
+						}
+					);
+				}
+			}
+		]);
 	},
 	onAddRecords: function(store, records) {
-		this.doWithDocs(function(lists) {
+		var me = this;
+		me.doWithDocs(function(lists) {
 			var toadd = [];
 			for (var i = 0; i < records.length; ++i) {
 				if (lists.every(function(l) { return l._id != records[i].getData()._id })) {
@@ -94,12 +99,15 @@ Ext.define('TodoApp.store.List', {
 			}
 			if (toadd.length > 0) {
 				lists = lists.concat(toadd);
-				store.localDB.bulkDocs(toadd);
+				store.localDB.bulkDocs(toadd, function() {
+					me.flagStoreForSync();
+				});
 			}
 		});
 	},
 	onRemoveRecords: function(store, records, indices) {
-		this.doWithDocs(function(lists) {
+		var me = this;
+		me.doWithDocs(function(lists) {
 			for (var i = 0; i < records.length; ++i) {
 				lists = lists.filter(function(e) { return e._id == records[i].getData()._id; });
 			}
@@ -107,19 +115,34 @@ Ext.define('TodoApp.store.List', {
 				lists[i]._deleted = true;
 			}
 			if (lists.length > 0) {
-				store.localDB.bulkDocs(lists);
+				store.localDB.bulkDocs(lists, function() {
+					me.flagStoreForSync();
+				});
 			}
 		});
 	},
 	onUpdateRecord: function(store, record, newIndex, oldIndex, modifiedFieldNames, modifiedValues) {
+		var me = this;
 		if (modifiedFieldNames.length == 0) {
 			// No changes, don’t bother updating the list
 			return;
 		}
-		this.doWithDoc(function(doc) {
+		me.doWithDoc(function(doc) {
 			var newDoc = record.getData();
 			newDoc._rev = doc._rev;
-			store.localDB.put(newDoc);
+			store.localDB.put(newDoc, function() {
+				me.flagStoreForSync();
+			});
+		});
+	},
+	flagStoreForSync: function() {
+		var me = this;
+		me.localMetaDB.get('lists', function(error, doc) {
+			if (!doc) {
+				me.localMetaDB.put({
+					'_id': 'lists'
+				});
+			}
 		});
 	}
 });

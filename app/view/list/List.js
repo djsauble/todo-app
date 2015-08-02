@@ -33,5 +33,12 @@ Ext.define('TodoApp.view.list.List', {
 	        	store: 'Item'
 	        }
     	]
+    },
+
+    initialize: function() {
+    	// Autoload appears to be broken for dataviews
+    	Ext.getStore('Item').load();
+
+    	this.callParent();
     }
 });

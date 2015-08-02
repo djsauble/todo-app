@@ -28,10 +28,10 @@ Ext.define('TodoApp.view.item.DataItem', {
 				setHtml: 'description'
 			},
 			getEdit: {
-				setData: 'id'
+				setData: '_id'
 			},
 			getDestroy: {
-				setData: 'id'
+				setData: '_id'
 			}
 		}
 	},

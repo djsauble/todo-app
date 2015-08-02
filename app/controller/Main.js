@@ -2,7 +2,7 @@ Ext.define('TodoApp.controller.Main', {
 	extend: 'Ext.app.Controller',
 	config: {
 		views: [
-			'SignIn',
+			'TodoApp.view.SignIn',
 			'TodoApp.view.list.Lists',
 			'TodoApp.view.list.New',
 			'TodoApp.view.list.DataItem',
@@ -13,19 +13,16 @@ Ext.define('TodoApp.controller.Main', {
 			'TodoApp.view.item.DataItem',
 			'TodoApp.view.collaborator.List',
 			'TodoApp.view.collaborator.New',
-			'TodoApp.view.collaborator.DataItem',
-			'Ext.util.Geolocation'
+			'TodoApp.view.collaborator.DataItem'
 		],
 		models: [
 			'User',
-			'Item',
 			'List',
 			'Collaborator',
 			'Position'
 		],
 		stores: [
 			'User',
-			'Item',
 			'List',
 			'Collaborator',
 			'Position'
@@ -91,9 +88,6 @@ Ext.define('TodoApp.controller.Main', {
 			// HACK: Sencha says you shouldn’t define listeners in the config object, so don’t do this
 			'todo-lists button[action=signin]': {
 				tap: 'showSignInView'
-			},
-			'todo-lists button[action=signout]': {
-				tap: 'signOut'
 			},
 			'todo-lists button[action=new]': {
 				tap: 'showNewListView'
@@ -163,157 +157,15 @@ Ext.define('TodoApp.controller.Main', {
 			},
 			'todo-sign-in button[action=back]': {
 				tap: 'goBack'
-			},
-			'todo-sign-in button[action=submit]': {
-				tap: 'signIn'
 			}
 		}
-	},
-	geo: null,
-	syncHandler: null,
-	init: function() {
-		var me = this,
-			store = Ext.getStore('List'),
-			record = Ext.getStore('User').first(),
-			data;
-
-		store.localDB = new PouchDB('lists');
-
-		if (record) {
-			data = record.getData();
-			store.username = data.username;
-			me.connect(data.username, data.password);
-		}
-
-		me.predictBandwidth();
-
-		me.checkForTurbulence();
-	},
-	predictBandwidth: function() {
-		var me = this;
-		me.geo = Ext.create('Ext.util.Geolocation', {
-			listeners: {
-				locationupdate: function(geo) {
-					//console.log("Update location");
-					// Are there any points in the database?
-					var store = Ext.getStore('Position');
-					//console.log(store.getCount() + " points in database");
-					if (!store.getCount()) {
-						store.add({
-							latitude: geo._latitude,
-							longitude: geo._longitude,
-							offline: me.offline
-						});
-						return;
-					}
-
-					// Is the current location more than 10 meters away from the closest location? Save it.
-					var records = store.getData().all,
-						closest = null,
-						closestDistance = null;
-					records.forEach(function(e) {
-						var distance = Math.sqrt(Math.pow((e.data.latitude - geo._latitude), 2) + Math.pow((e.data.longitude - geo._longitude), 2));
-						if (!closest || distance < closestDistance) {
-							closest = e.data;
-							closestDistance = distance;
-							return;
-						}
-					});
-					//console.log(closestDistance);
-					if (closestDistance > 10) {
-						store.add({
-							latitude: geo._longitude,
-							longitude: geo._latitude,
-							offline: me.offline
-						});
-					}
-
-					// Is the current location less than 10 meters away from the closest location? Update it.
-					if (closestDistance < 10 && closest.online != me.online) {
-						var record = store.findRecord('id', closest.id);
-						record.set('online', me.online);
-						store.sync();
-					}
-
-					// Is the current positioning information accurate enough?
-					if (!geo._accuracy || geo._accuracy > 50)
-						return;
-
-					// Is the current speed significant enough?
-					if (!geo._speed || geo._speed < 1)
-						return;
-
-					// Determine where user will be in 10 seconds
-					var R = 6367444.7, // Earth's radius in meters
-						distance = geo._speed * 10, // Current velocity times 10 (seconds)
-						dx = distance * (Math.sin(geo._heading * Math.PI / 180)),
-						dy = distance * (-Math.cos(geo._heading * Math.PI / 180)),
-						dlng = dx / (R * Math.cos(geo._latitude)),
-						dlat = dy / R
-						newLng = geo._longitude + dlng,
-						newLat = geo._latitude + dlat;
-
-					// What is the closest point to that location? (nearest neighbor search)
-					closest = null;
-					closestDistance = null;
-					records.forEach(function(e) {
-						var distance = Math.sqrt(Math.pow((e.data.latitude - newLat), 2) + Math.pow((e.data.longitude - newLng), 2));
-						if (!closest || distance < closestDistance) {
-							closest = e.data;
-							closestDistance = distance;
-							return;
-						}
-					});
-
-					// Was the closest point offline? Post a warning…
-					if (!closest.online) {
-						this.setIndicator("Going offline soon. :-/");
-					}
-				}
-			}
-		});
-	},
-	oneTimeMessage: false,
-	checkForTurbulence: function() {
-		var me = this;
-
-		return setInterval(function() {
-			// Are we online and syncing?
-			if (!me.online || !me.syncStarted || me.message.indexOf('offline soon') !== -1)
-				return;
-
-			// Have we been attempting to synchronize for at least 30 minutes?
-			var duration = (new Date()).getTime() - me.syncStarted;
-			if (duration > 30 * 60 * 1000 && me.oneTimeMessage === false) {
-				Ext.Msg.show({
-					title: "Fasten your seatbelt",
-					message: "We've been trying to sync for 30 minutes, but no dice. Your data is safe, but you'll want to connect to better Internet eventually.",
-					buttons: Ext.MessageBox.OK
-				});
-				me.oneTimeMessage = true;
-			}
-			// 10 minutes?
-			else if (duration > 10 * 60 * 1000) {
-				me.setIndicator("Are you on GPRS?");
-			}
-			// 1 minute?
-			else if (duration > 60 * 1000) {
-				me.setIndicator("Find faster Internet?");
-			}
-			// 30 seconds?
-			else if (duration > 30 * 1000) {
-				me.setIndicator("Still working…");
-			}
-			// 10 seconds?
-			else if (duration > 10 * 1000 && me.oneTimeMessage === false) {
-				me.setIndicator("Taking a bit longer…");
-			}
-		}, 1000);
 	},
 	createTodoItem: function(button, e, eOpts) {
 		var store = Ext.getStore('Item');
 
-		store.add(this.getNewForm().getValues());
+		var model = new TodoApp.model.Item(this.getNewForm().getValues());
+		model.setId(store.currentListId + '_' + model.getId());
+		store.add(model);
 		
 		this.showListView();
 	},
@@ -339,7 +191,7 @@ Ext.define('TodoApp.controller.Main', {
 			editPanel = this.getEditPanel(),
 			editForm = this.getEditForm(),
 			imagePanel = editForm.down('todo-image'),
-			record = store.findRecord('id', button.getData()),
+			record = store.findRecord('_id', button.getData());//,
 			mediaData = record.get('media');
 
 		editForm.setRecord(record);
@@ -366,12 +218,14 @@ Ext.define('TodoApp.controller.Main', {
 			itemStore = Ext.getStore('Item');
 
 		listStore.currentListId = button.getData();
-		itemStore.currentListStore = listStore;
-		itemStore.currentListRecord = record;
-		itemStore.removeAll();
-		if (items) {
-			itemStore.add(items);
-		}
+		itemStore.currentListId = button.getData();
+		itemStore.filter([
+			{
+				filterFn: function(e) {
+					return e.get('list') == itemStore.currentListId;
+				}
+			}
+		]);
 
 		listPanel.down('titlebar').setTitle(record.get('name'));
 		this.showListView();
@@ -401,7 +255,7 @@ Ext.define('TodoApp.controller.Main', {
 	deleteTodoItem: function(button, e, eOpts) {
 		var dataview = this.getListDataView(),
 			store = dataview.getStore(),
-			record = store.findRecord('id', button.getData()).erase();
+			record = store.findRecord('_id', button.getData()).erase();
 
 		store.remove(record);
 	},
@@ -422,7 +276,7 @@ Ext.define('TodoApp.controller.Main', {
 	saveTodoItem: function(button, e, eOpts) {
 		var store = Ext.getStore('Item'),
 			values = this.getEditForm().getValues(),
-			record = store.findRecord('id', values.id);
+			record = store.findRecord('_id', values._id);
 
 		record.setData(values);
 		record.setDirty(); // Needed otherwise update record will not sync
@@ -477,6 +331,7 @@ Ext.define('TodoApp.controller.Main', {
 
 		// Reset the new panel
 		newForm.reset();
+		newForm.down('hiddenfield[name=list]').setValue(Ext.getStore('List').currentListId);
 		newForm.down('todo-image').down('panel').setHtml('No image loaded');
 		newForm.down('todo-image').down('button[text=Select]').setHidden(false);
 		newForm.down('todo-image').down('button[text=Remove]').setHidden(true);
@@ -553,105 +408,6 @@ Ext.define('TodoApp.controller.Main', {
 
 		if (map) {
 			map.down('panel').add(this.mapResource);
-		}
-	},
-	signIn: function() {
-		var values = this.getSignInForm().getValues();
-		this.getSignInForm().down('passwordfield').reset();
-		this.connect(values.username, values.password);
-		this.showListsView();
-	},
-	signOut: function() {
-		this.disconnect();
-	},
-	connect: function(username, password) {
-		var listStore = Ext.getStore('List'),
-			userStore = Ext.getStore('User');
-
-		userStore.removeAll();
-		userStore.add({
-			username: username,
-			password: password
-		});
-
-		listStore.username = username;
-		listStore.password = password;
-
-		if (this.syncHandler) {
-			this.syncHandler.cancel();
-		} else {
-			this.startSyncing(this);
-		}
-	},
-	disconnect: function() {
-		var listStore = Ext.getStore('List'),
-			userStore = Ext.getStore('User');
-
-		if (this.syncHandler) {
-			userStore.removeAll();
-			listStore.removeAll();
-			listStore.username = 'nobody';
-			listStore.password = null;
-			this.syncHandler.cancel();
-		}
-	},
-	syncStarted: null,
-	startSyncing: function(me) {
-		var me = this,
-			store = Ext.getStore('List');
-
-		store.remoteDB = new PouchDB('https://' + store.username + ':' + store.password + '@djsauble.cloudant.com/lists');
-		me.syncHandler = store.localDB.sync(store.remoteDB, {
-			live: true,
-			retry: true,
-			back_off_function: function (delay) {
-				me.online = false;
-				me.setIndicator("offline :-(");
-				return 1000;
-			}
-		}).on('change', function (change) {
-			console.log("Sync change");
-			if (change.direction == "pull" && change.change.docs.length > 0) {
-				console.log("Change occurred. Synchronizing.");
-				store.load();
-			}
-		}).on('paused', function (info) {
-			console.log("Sync paused");
-			me.online = true;
-			me.syncStarted = null;
-			me.oneTimeMessage = false;
-			me.setIndicator("online :-)");
-		}).on('active', function (info) {
-			console.log("Sync active");
-			me.syncStarted = (new Date()).getTime();
-			me.setIndicator("Syncing…");
-		}).on('error', function (err) {
-			console.log("Sync error");
-		});
-		me.syncHandler.on('complete', function (info) {
-			store.localDB.destroy().then(function() {
-				store.localDB = new PouchDB('lists');
-				me.syncHandler = null;
-				me.getListsPanel().down('button[action=signin]').show();
-				me.getListsPanel().down('button[action=signout]').hide();
-				if (store.username && store.password) {
-					me.startSyncing(me);
-				}
-			});
-		});
-		setTimeout(function() {
-			me.getListsPanel().down('button[action=signin]').hide();
-			me.getListsPanel().down('button[action=signout]').show();	
-		}, 50);
-	},
-	online: null,
-	message: null,
-	setIndicator: function(message) {
-		var me = this;
-
-		if (me.message != message) {
-			me.getMain().down('toolbar[docked=bottom]').setTitle(message);
-			me.message = message;
 		}
 	}
 });

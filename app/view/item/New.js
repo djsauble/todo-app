@@ -37,6 +37,10 @@ Ext.define('TodoApp.view.item.New', {
 
                 items: [
                     {
+                        xtype: 'hiddenfield',
+                        name: 'list'
+                    },
+                    {
                         xtype: 'fieldset',
                         title: 'Description',
                         items: {
