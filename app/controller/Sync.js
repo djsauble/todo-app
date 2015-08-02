@@ -251,7 +251,7 @@ Ext.define('TodoApp.controller.Sync', {
 		}).on('change', function (change) {
 			if (change.change.docs.length) {
 				console.log("Sync change");
-				me.prioritizedSync(change.change.docs);
+				me.calculateSync(change.change.docs);
 			}
 		}).on('paused', function (info) {
 			console.log("Sync paused");
@@ -286,7 +286,7 @@ Ext.define('TodoApp.controller.Sync', {
 			me.getListsPanel().down('button[action=signout]').show();	
 		}, 50);
 	},
-	prioritizedSync: function(metadata) {
+	calculateSync: function(metadata) {
 		var me = this,
 			itemStore = Ext.getStore('Item'),
 			listStore = Ext.getStore('List'),
@@ -312,25 +312,35 @@ Ext.define('TodoApp.controller.Sync', {
 			}
 		}
 
+		me.doSync(syncLists, syncText, syncMaps, syncImages);
+	},
+	doSync: function(syncLists, syncText, syncMaps, syncImages) {
+		var me = this,
+			itemStore = Ext.getStore('Item'),
+			listStore = Ext.getStore('List');
+
 		if (syncLists) {
 			listStore.localDB.sync(listStore.remoteDB, function() {
-				listStore.load();
+				listStore.load(function() {
+					me.doSync(false, syncText, syncMaps, syncImages)
+				});
 			});
-		}
-		if (syncText) {
+		} else if (syncText) {
 			itemStore.localTextDB.sync(itemStore.remoteTextDB, function() {
-				itemStore.load();
-			});	
-		}
-		if (syncMaps) {
+				itemStore.load(function() {
+					me.doSync(false, false, syncMaps, syncImages);
+				});
+			});
+		} else if (syncMaps) {
 			itemStore.localMapsDB.sync(itemStore.remoteMapsDB, function() {
-				itemStore.load();
-			});	
-		}
-		if (syncImages) {
+				itemStore.load(function() {
+					me.doSync(false, false, false, syncImages);
+				});
+			});
+		} else if (syncImages) {
 			itemStore.localImagesDB.sync(itemStore.remoteImagesDB, function() {
 				itemStore.load();
-			});	
+			});
 		}
 	},
 	online: null,

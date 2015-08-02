@@ -142,6 +142,8 @@ Ext.define('TodoApp.store.List', {
 				me.localMetaDB.put({
 					'_id': 'lists'
 				});
+			} else {
+				me.localMetaDB.put(doc);
 			}
 		});
 	}
