@@ -45,7 +45,6 @@ Ext.define('TodoApp.store.Item', {
 						break;
 					}
 				}
-
 				if (indexOf === -1) {
 					docsArray.push(docs[i]);
 				} else {
@@ -82,71 +81,59 @@ Ext.define('TodoApp.store.Item', {
 			})
 		);
 	},
+  	addDocsAttributes: function(me, store, docsArray, attributes, flag, callback) {
+		me.doWithDocs(store, function(pouchdb, docs) {
+			var toadd = [];
+	  		for (var i = 0; i < docsArray.length; ++i) {
+	  			var exists = docs.some(function(d) { return d._id == docsArray[i]._id; });
+	  			if (!exists) {
+	  				var obj = {
+	  					'_id': docsArray[i]._id,
+	  					'list': me.currentListId
+	  				};
+	  				var change = false;
+	  				Ext.each(attributes, function(attr) {
+	  					if (docsArray[i][attr]) {
+	  						obj[attr] = docsArray[i][attr];
+	  						change = true;
+	  					}
+	  				});
+	  				if (change) {
+	  					toadd.push(obj);
+	  				}
+	  			}
+	  		}
+	  		if (toadd.length > 0) {
+	  			store.bulkDocs(toadd, function() {
+	  				me.flagStoreForSync(flag);
+	  				callback(docsArray);
+	  			})
+	  		} else {
+	  			callback(docsArray);
+	  		}
+		});
+  	},
 	onAddRecords: function(store, records) {
 		var me = this;
 
-		var addText = function(pouchdb, lists) {
-			var toadd = [];
-			for (var i = 0; i < records.length; ++i) {
-				var data = records[i].getData();
-				if (data.description && lists.every(function(l) { return l._id != data._id })) {
-					toadd.push({
-						'_id': data._id,
-						'list': me.currentListId,
-						'description': data.description
-					});
-				}
-			}
-			if (toadd.length > 0) {
-				lists = lists.concat(toadd);
-				pouchdb.bulkDocs(toadd, function() {
-					me.flagStoreForSync('text');
-				});
-			}
+		var addImages = function(docsArray) {
+			me.addDocsAttributes(me, store.localImagesDB, docsArray, ['media'], 'images', Ext.emptyFn);
 		};
-		var addMaps = function(pouchdb, lists) {
-			var toadd = [];
-			for (var i = 0; i < records.length; ++i) {
-				var data = records[i].getData();
-				if (data.latitude && data.longitude && lists.every(function(l) { return l._id != data._id })) {
-					toadd.push({
-						'_id': data._id,
-						'list': me.currentListId,
-						'latitude': data.latitude,
-						'longitude': data.longitude
-					});
-				}
-			}
-			if (toadd.length > 0) {
-				lists = lists.concat(toadd);
-				pouchdb.bulkDocs(toadd, function() {
-					me.flagStoreForSync('maps');
-				});
-			}
+		var addMaps = function(docsArray) {
+			me.addDocsAttributes(me, store.localMapsDB, docsArray, ['latitude', 'longitude'], 'maps', function(docs) {
+				addImages(docs);
+			});
 		};
-		var addImages = function(pouchdb, lists) {
-			var toadd = [];
-			for (var i = 0; i < records.length; ++i) {
-				var data = records[i].getData();
-				if (data.media && data.media !== "" && lists.every(function(l) { return l._id != data._id })) {
-					toadd.push({
-						'_id': data._id,
-						'list': me.currentListId,
-						'media': data.media
-					});
-				}
-			}
-			if (toadd.length > 0) {
-				lists = lists.concat(toadd);
-				pouchdb.bulkDocs(toadd, function() {
-					me.flagStoreForSync('images');
-				});
-			}
+		var addText = function(docsArray) {
+			me.addDocsAttributes(me, store.localTextDB, docsArray, ['description'], 'text', function(docs) {
+				addMaps(docs);
+			});
 		};
-
-		this.doWithDocs(store.localTextDB, addText);
-		this.doWithDocs(store.localMapsDB, addMaps);
-		this.doWithDocs(store.localImagesDB, addImages);
+		addText(records.map(
+			function(r) {
+				return r.getData();
+			})
+		);
 	},
 	onRemoveRecords: function(store, records, indices) {
 		var me = this;
