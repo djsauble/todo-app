@@ -296,17 +296,18 @@ Ext.define('TodoApp.controller.Sync', {
 			syncImages = false;
 
 		for (var i = 0; i < metadata.length; ++i) {
-			var store = metadata[i]._id;
-			if (store === "lists") {
+			var store = metadata[i]._id.replace(/_.*/, "");
+			var object = metadata[i]._id.replace(store + "_", "");
+			if (store === "lists" && object === listStore.username) {
 				console.log("Sync lists");
 				syncLists = true;
-			} else if (store === "text") {
+			} else if (store === "text" && object === itemStore.username) {
 				console.log("Sync text");
 				syncText = true;
-			} else if (store === "maps") {
+			} else if (store === "maps" && object === itemStore.username) {
 				console.log("Sync maps");
 				syncMaps = true;
-			} else if (store === "images") {
+			} else if (store === "images" && object === itemStore.username) {
 				console.log("Sync images");
 				syncMaps = true;
 			}

@@ -234,10 +234,10 @@ Ext.define('TodoApp.store.Item', {
 	},
 	flagStoreForSync: function(store) {
 		var me = this;
-		me.localMetaDB.get(store, function(error, doc) {
+		me.localMetaDB.get(store + '_' + me.username, function(error, doc) {
 			if (!doc) {
 				me.localMetaDB.put({
-					'_id': store
+					'_id': store + '_' + me.username
 				});
 			} else {
 				me.localMetaDB.put(doc);
