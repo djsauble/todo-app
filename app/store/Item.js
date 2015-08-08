@@ -35,57 +35,52 @@ Ext.define('TodoApp.store.Item', {
 					}));
 				});
   	},
+  	loadDocsAttributes: function(me, store, docsArray, attributes, callback) {
+		me.doWithDocs(store, function(pouchdb, docs) {
+			for (var i = 0; i < docs.length; ++i) {
+				var indexOf = -1;
+				for (var j = 0; j < docsArray.length; ++j) {
+					if (docsArray[j]._id == docs[i]._id) {
+						indexOf = j;
+						break;
+					}
+				}
+
+				if (indexOf === -1) {
+					docsArray.push(docs[i]);
+				} else {
+					Ext.each(attributes, function(attr) {
+						docsArray[indexOf][attr] = docs[i][attr];
+					});
+				}
+  			}
+  			callback(docsArray);
+		});
+  	},
   	onLoad: function(store, records, successful, operation) {
   		var me = this;
   		var updateImages = function(docsArray) {
-  			me.doWithDocs(store.localImagesDB, function(pouchdb, docs) {
-				for (var i = 0; i < docs.length; ++i) {
-					docsArray = docsArray.map(function(e) {
-						if (e._id == docs[i]._id) {
-							e.media = docs[i].media
-						}
-						return e;
-					});
-	  			}
-	  			store.setData(docsArray);
+  			me.loadDocsAttributes(me, store.localImagesDB, docsArray, ['media'], function(docs) {
+  				store.setData(docs);
   			});
   		};
   		var updateMaps = function(docsArray) {
-  			me.doWithDocs(store.localMapsDB, function(pouchdb, docs) {
-  				for (var i = 0; i < docs.length; ++i) {
-					docsArray = docsArray.map(function(e) {
-						if (e._id == docs[i]._id) {
-							e.latitude = docs[i].latitude;
-							e.longitude = docs[i].longitude;
-						}
-						return e;
-					});
-  				}
-  				updateImages(docsArray);
+  			me.loadDocsAttributes(me, store.localMapsDB, docsArray, ['latitude', 'longitude'], function(docs) {
+  				store.setData(docs);
+  				updateImages(docs);
   			});
   		};
-		var setData = function(pouchdb, docs) {
-			var docstoadd = [];
-			for (var i = 0; i < records.length; ++i) {
-				var data = records[i].getData();
-				if (docs.every(function(l) { return l._id != data._id })) {
-					var model = new TodoApp.model.Item({
-						_id: data._id.replace(/.*_/, me.currentListId + "_"),
-						list: store.currentListId,
-						description: data.description,
-						media: data.media,
-						latitude: data.latitude,
-						longitude: data.longitude
-					});
-					docstoadd.push(model);
-				}
-			}
-			if (docstoadd.length > 0) {
-				docs = docs.concat(docstoadd);
-			}
-			updateMaps(docs);
+		var updateText = function(docsArray) {
+			me.loadDocsAttributes(me, store.localTextDB, docsArray, ['description'], function(docs) {
+				store.setData(docs);
+				updateMaps(docs);
+			});
 		};
-		me.doWithDocs(store.localTextDB, setData);
+		updateText(records.map(
+			function(r) {
+				return r.getData();
+			})
+		);
 	},
 	onAddRecords: function(store, records) {
 		var me = this;
