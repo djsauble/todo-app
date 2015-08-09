@@ -135,31 +135,51 @@ Ext.define('TodoApp.store.Item', {
 			})
 		);
 	},
+  	removeDocsAttributes: function(me, store, docsArray, flag, callback) {
+		me.doWithDocs(store, function(pouchdb, docs) {
+			docs = docs.filter(
+				function(e) {
+					return docsArray.some(
+						function(r) {
+							return r._id == e._id;
+						}
+					);
+				}
+			);
+			for (var i = 0; i < docs.length; ++i) {
+				docs[i]._deleted = true;
+			}
+			if (docs.length > 0) {
+				pouchdb.bulkDocs(docs, function() {
+						me.flagStoreForSync(flag);
+						callback(docsArray);
+				});
+			} else {
+				callback(docsArray);
+			}
+		});
+	},
 	onRemoveRecords: function(store, records, indices) {
 		var me = this;
-		var func = function(pouchdb, lists) {
-			for (var i = 0; i < records.length; ++i) {
-				lists = lists.filter(function(e) { return e._id == records[i].getData()._id; });
-			}
-			for (var i = 0; i < lists.length; ++i) {
-				lists[i]._deleted = true;
-			}
-			if (lists.length > 0) {
-				pouchdb.bulkDocs(lists, function() {
-					if (pouchdb === store.localTextDB) {
-						me.flagStoreForSync('text');
-					} else if (pouchdb === store.localMapsDB) {
-						me.flagStoreForSync('maps');
-					} else if (pouchdb === store.localImagesDB) {
-						me.flagStoreForSync('images');
-					}
-				});
-			}
-		};
 
-		me.doWithDocs(store.localTextDB, func);
-		me.doWithDocs(store.localMapsDB, func);
-		me.doWithDocs(store.localImagesDB, func);
+		var removeImages = function(docsArray) {
+			me.removeDocsAttributes(me, store.localImagesDB, docsArray, 'images', Ext.emptyFn);
+		};
+		var removeMaps = function(docsArray) {
+			me.removeDocsAttributes(me, store.localMapsDB, docsArray, 'maps', function(docs) {
+				removeImages(docs);
+			});
+		};
+		var removeText = function(docsArray) {
+			me.removeDocsAttributes(me, store.localTextDB, docsArray, 'text', function(docs) {
+				removeMaps(docs);
+			})
+		};
+		removeText(records.map(
+			function(r) {
+				return r.getData();
+			})
+		);
 	},
 	onUpdateRecord: function(store, record, newIndex, oldIndex, modifiedFieldNames, modifiedValues) {
 		var me = this;
