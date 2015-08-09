@@ -285,6 +285,8 @@ Ext.define('TodoApp.controller.Sync', {
 			me.getListsPanel().down('button[action=signin]').hide();
 			me.getListsPanel().down('button[action=signout]').show();	
 		}, 50);
+
+		me.doSync(true, true, true, true);
 	},
 	calculateSync: function(metadata) {
 		var me = this,
@@ -331,6 +333,8 @@ Ext.define('TodoApp.controller.Sync', {
 				itemStore.load(function() {
 					me.doSync(false, false, syncMaps, syncImages);
 				});
+			}).on('error', function(err) {
+				console.log(err);
 			});
 		} else if (syncMaps) {
 			itemStore.localMapsDB.sync(itemStore.remoteMapsDB, function() {
