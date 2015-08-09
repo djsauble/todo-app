@@ -181,63 +181,55 @@ Ext.define('TodoApp.store.Item', {
 			})
 		);
 	},
-	onUpdateRecord: function(store, record, newIndex, oldIndex, modifiedFieldNames, modifiedValues) {
-		var me = this;
-		if (modifiedFieldNames.length == 0) {
-			// No changes, don’t bother updating the list
-			return;
-		}
-		var data = record.getData();
-		if (modifiedValues['description']) {
-			store.localTextDB.get(data['_id'], function(error, doc) {
-				if (!doc) {
-					doc = {
-						'_id': data['_id'],
-						'list': me.currentListId
-					}
-				}
-				if (doc.description != data.description) {
-					doc.description = data.description;
-					store.localTextDB.put(doc, function() {
-						store.flagStoreForSync('text');
-					});
-				}
-			});
-		}
-		if (modifiedValues['media'] !== null) {
-			store.localImagesDB.get(data['_id'], function(error, doc) {
-				if (!doc) {
-					doc = {
-						'_id': data['_id'],
-						'list': me.currentListId
-					}
-				}
-				if (!doc.media) {
-					doc.media = "";
-				}
-				if (doc.media != data.media) {
-					doc.media = data.media;
-					store.localImagesDB.put(doc, function() {
-						store.flagStoreForSync('images');
-					});
-				}
-			});
-		}
-		store.localMapsDB.get(data['_id'], function(error, doc) {
+  	updateDocsAttributes: function(me, store, data, attributes, flag, callback) {
+		store.get(data['_id'], function(error, doc) {
 			if (!doc) {
 				doc = {
 					'_id': data['_id'],
 					'list': me.currentListId
 				}
 			}
-			if (doc.latitude != data.latitude || doc.longitude != data.longitude) {
-				doc.latitude = data.latitude;
-				doc.longitude = data.longitude;
-				store.localMapsDB.put(doc, function() {
-					store.flagStoreForSync('maps');
+			var changes = attributes.some(function(attr) { return doc[attr] != data[attr]; });
+			if (changes) {
+				Ext.each(attributes, function(attr) {
+					doc[attr] = data[attr];
+					store.put(doc, function() {
+						me.flagStoreForSync(flag);
+						callback(data);
+					});
 				});
+			} else {
+				callback(data);
 			}
 		});
+	},
+	onUpdateRecord: function(store, record, newIndex, oldIndex, modifiedFieldNames, modifiedValues) {
+		var me = this;
+		if (modifiedFieldNames.length == 0) {
+			// No changes, don’t bother updating the list
+			return;
+		}
+
+		var updateImages = function(data) {
+			if (modifiedValues['media'] !== null) {
+				me.updateDocsAttributes(me, store.localImagesDB, data, ['media'], 'images', Ext.emptyFn);
+			}
+		};
+		var updateMaps = function(data) {
+			me.updateDocsAttributes(me, store.localMapsDB, data, ['latitude', 'longitude'], 'maps', function(doc) {
+				updateImages(doc);
+			});
+		};
+		var updateText = function(data) {
+			if (modifiedValues['description']) {
+				me.updateDocsAttributes(me, store.localTextDB, data, ['description'], 'text', function(doc) {
+					updateMaps(doc);
+				});
+			} else {
+				updateMaps(data);
+			}
+		}
+		updateText(record.getData());
 	},
 	flagStoreForSync: function(store) {
 		var me = this;
