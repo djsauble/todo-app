@@ -205,10 +205,6 @@ Ext.define('TodoApp.store.Item', {
 	},
 	onUpdateRecord: function(store, record, newIndex, oldIndex, modifiedFieldNames, modifiedValues) {
 		var me = this;
-		if (modifiedFieldNames.length == 0) {
-			// No changes, don’t bother updating the list
-			return;
-		}
 
 		var updateImages = function(data) {
 			if (modifiedValues['media'] !== null) {
