@@ -42,7 +42,15 @@ Ext.define('TodoApp.view.item.Edit', {
                     },
                     {
                         xtype: 'hiddenfield',
-                        name: '_rev'
+                        name: 'textrev'
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        name: 'mapsrev'
+                    },
+                    {
+                        xtype: 'hiddenfield',
+                        name: 'imagesrev'
                     },
                     {
                         xtype: 'hiddenfield',

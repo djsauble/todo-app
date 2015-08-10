@@ -35,7 +35,23 @@ Ext.define('TodoApp.store.Item', {
 					}));
 				});
   	},
-  	loadDocsAttributes: function(me, store, docsArray, attributes, callback) {
+  	setDataIfNeeded: function(store, docs) {
+  		var recordIds = store.getData().all.map(function(r) { return r.getId(); }).sort();
+  		var docIds = docs.map(function(r) { return r._id; }).sort();
+
+  		if (recordIds.length !== docIds.length) {
+  			store.setData(docs);
+  			return;
+  		}
+
+  		for (var i = 0; i < recordIds.length; ++i) {
+  			if (recordIds[i] != docIds[i]) {
+  				store.setData(docs);
+  				return;
+  			}
+  		}
+  	},
+  	loadDocsAttributes: function(me, store, docsArray, attributes, flag, callback) {
 		me.doWithDocs(store, function(pouchdb, docs) {
 			for (var i = 0; i < docs.length; ++i) {
 				var indexOf = -1;
@@ -48,6 +64,7 @@ Ext.define('TodoApp.store.Item', {
 				if (indexOf === -1) {
 					docsArray.push(docs[i]);
 				} else {
+					docsArray[indexOf][flag + 'rev'] = docs[i]['_rev'];
 					Ext.each(attributes, function(attr) {
 						docsArray[indexOf][attr] = docs[i][attr];
 					});
@@ -59,19 +76,19 @@ Ext.define('TodoApp.store.Item', {
   	onLoad: function(store, records, successful, operation) {
   		var me = this;
   		var updateImages = function(docsArray) {
-  			me.loadDocsAttributes(me, store.localImagesDB, docsArray, ['media'], function(docs) {
-  				store.setData(docs);
+  			me.loadDocsAttributes(me, store.localImagesDB, docsArray, ['media'], 'images', function(docs) {
+  				me.setDataIfNeeded(store, docs);
   			});
   		};
   		var updateMaps = function(docsArray) {
-  			me.loadDocsAttributes(me, store.localMapsDB, docsArray, ['latitude', 'longitude'], function(docs) {
-  				store.setData(docs);
+  			me.loadDocsAttributes(me, store.localMapsDB, docsArray, ['latitude', 'longitude'], 'maps', function(docs) {
+  				me.setDataIfNeeded(store, docs);
   				updateImages(docs);
   			});
   		};
 		var updateText = function(docsArray) {
-			me.loadDocsAttributes(me, store.localTextDB, docsArray, ['description'], function(docs) {
-				store.setData(docs);
+			me.loadDocsAttributes(me, store.localTextDB, docsArray, ['description'], 'text', function(docs) {
+				me.setDataIfNeeded(store, docs);
 				updateMaps(docs);
 			});
 		};
@@ -92,6 +109,7 @@ Ext.define('TodoApp.store.Item', {
 	  					'list': me.currentListId
 	  				};
 	  				var change = false;
+	  				obj['_rev'] = docsArray[i][flag + 'rev'];
 	  				Ext.each(attributes, function(attr) {
 	  					if (docsArray[i][attr]) {
 	  						obj[attr] = docsArray[i][attr];
@@ -189,14 +207,18 @@ Ext.define('TodoApp.store.Item', {
 					'list': me.currentListId
 				}
 			}
-			var changes = attributes.some(function(attr) { return doc[attr] != data[attr]; });
+			var changes = attributes.some(
+				function(attr) {
+					return doc[attr] != data[attr];
+				}
+			);
 			if (changes) {
 				Ext.each(attributes, function(attr) {
 					doc[attr] = data[attr];
-					store.put(doc, function() {
-						me.flagStoreForSync(flag);
-						callback(data);
-					});
+				});
+				store.put(doc, function() {
+					me.flagStoreForSync(flag);
+					callback(data);
 				});
 			} else {
 				callback(data);

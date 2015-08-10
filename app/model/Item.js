@@ -11,7 +11,9 @@ Ext.define('TodoApp.model.Item', {
 		idProperty: '_id',
 		fields: [
 			'_id',
-			'_rev',
+			'textrev',
+			'mapsrev',
+			'imagesrev',
 			'list',
 			'description',
 			'media',
