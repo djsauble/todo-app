@@ -209,9 +209,13 @@ Ext.define('TodoApp.store.Item', {
 			}
 			var changes = attributes.some(
 				function(attr) {
+					if (!doc[attr] && !data[attr]) {
+						return false;
+					}
 					return doc[attr] != data[attr];
 				}
 			);
+
 			if (changes) {
 				Ext.each(attributes, function(attr) {
 					doc[attr] = data[attr];
