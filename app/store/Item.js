@@ -109,7 +109,6 @@ Ext.define('TodoApp.store.Item', {
 	  					'list': me.currentListId
 	  				};
 	  				var change = false;
-	  				obj['_rev'] = docsArray[i][flag + 'rev'];
 	  				Ext.each(attributes, function(attr) {
 	  					if (docsArray[i][attr]) {
 	  						obj[attr] = docsArray[i][attr];
@@ -217,6 +216,7 @@ Ext.define('TodoApp.store.Item', {
 			);
 
 			if (changes) {
+				doc['_rev'] = data[flag + 'rev'];
 				Ext.each(attributes, function(attr) {
 					doc[attr] = data[attr];
 				});
