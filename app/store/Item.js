@@ -28,16 +28,34 @@ Ext.define('TodoApp.store.Item', {
 					include_docs: true,
 					attachments: true,
 					startKey: me.currentListId + "_",
-					endKey: me.currentListId + "_\uffff"
+					endKey: me.currentListId + "_\uffff",
+					conflicts: true
 				}, function (error, result) {
 					func(store, result.rows.map(function(e) {
+						if (e.doc._conflicts.length) {
+							console.log("Conflict!");
+						}
 						return e.doc;
 					}));
 				});
   	},
   	setDataIfNeeded: function(store, docs) {
-  		var recordIds = store.getData().all.map(function(r) { return r.getId(); }).sort();
-  		var docIds = docs.map(function(r) { return r._id; }).sort();
+  		var sortFn = function(a, b) {
+  			return a._id > b._id ? 1 : a._id == b._id ? 0 : -1;
+  		};
+  		var recordIds = store.getData().all.map(function(r) {
+  			var data = r.getData();
+  			return {
+  				"_id": data._id,
+  				"_rev": data._rev
+  			}
+  		}).sort(sortFn);
+  		var docIds = docs.map(function(r) {
+  			return {
+  				"_id": r._id,
+  				"_rev": r._rev
+  			}
+  		}).sort(sortFn);
 
   		if (recordIds.length !== docIds.length) {
   			store.setData(docs);
@@ -45,7 +63,7 @@ Ext.define('TodoApp.store.Item', {
   		}
 
   		for (var i = 0; i < recordIds.length; ++i) {
-  			if (recordIds[i] != docIds[i]) {
+  			if (recordIds[i]._id != docIds[i]._id || recordIds[i]._rev != docIds[i]._rev) {
   				store.setData(docs);
   				return;
   			}
@@ -220,7 +238,7 @@ Ext.define('TodoApp.store.Item', {
 				Ext.each(attributes, function(attr) {
 					doc[attr] = data[attr];
 				});
-				store.put(doc, function() {
+				store.put(doc, function(error, response) {
 					me.flagStoreForSync(flag);
 					callback(data);
 				});
@@ -234,7 +252,9 @@ Ext.define('TodoApp.store.Item', {
 
 		var updateImages = function(data) {
 			if (modifiedValues['media'] !== null) {
-				me.updateDocsAttributes(me, store.localImagesDB, data, ['media'], 'images', Ext.emptyFn);
+				me.updateDocsAttributes(me, store.localImagesDB, data, ['media'], 'images', function(doc) {
+					me.load();
+				});
 			}
 		};
 		var updateMaps = function(data) {
