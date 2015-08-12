@@ -9,6 +9,10 @@ Ext.define('TodoApp.view.item.Image', {
 				xtype: 'hiddenfield',
 				name: 'media'
 			},
+            {
+                xtype: 'hiddenfield',
+                name: 'imagesrev'
+            },
 			{
 				xtype: 'panel',
 				layout: 'fit',

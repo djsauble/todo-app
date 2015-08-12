@@ -31,6 +31,12 @@ Ext.define('TodoApp.controller.Sync', {
 			},
 			'todo-sign-in button[action=submit]': {
 				tap: 'signIn'
+			},
+			'todo-edit button[action=accept]': {
+				tap: 'acceptChange'
+			},
+			'todo-edit button[action=reject]': {
+				tap: 'rejectChange'
 			}
 		}
 	},
@@ -59,6 +65,33 @@ Ext.define('TodoApp.controller.Sync', {
 		me.predictBandwidth();
 
 		me.checkForTurbulence();
+	},
+	acceptChange: function(button) {
+		var store = Ext.getStore('Item').localTextDB,
+			fieldset = button.up('fieldset'),
+			rev = fieldset.down('hiddenfield[name=textrev]'),
+			conflicts = fieldset.down('hiddenfield[name=textconflicts]'),
+			values = button.up('formpanel').getValues();
+
+		store.remove(values._id, values.textconflicts, function(error, doc) {
+			//console.log(doc);
+		});
+
+		conflicts.setValue(undefined)
+	},
+	rejectChange: function(button) {
+		var store = Ext.getStore('Item').localTextDB,
+			fieldset = button.up('fieldset'),
+			rev = fieldset.down('hiddenfield[name=textrev]'),
+			conflicts = fieldset.down('hiddenfield[name=textconflicts]'),
+			values = button.up('formpanel').getValues();
+
+		store.remove(values._id, values.textrev, function(error, doc) {
+			//console.log(doc);
+		});
+
+		rev.setValue(values.textconflicts);
+		conflicts.setValue(undefined);
 	},
 	predictBandwidth: function() {
 		var me = this;

@@ -8,7 +8,8 @@ Ext.define('TodoApp.view.item.Edit', {
         'Ext.field.Radio',
         'Ext.field.Hidden',
         'TodoApp.view.item.Image',
-        'TodoApp.view.item.Map'
+        'TodoApp.view.item.Map',
+        'TodoApp.view.item.Conflict'
     ],
 
     config: {
@@ -42,27 +43,28 @@ Ext.define('TodoApp.view.item.Edit', {
                     },
                     {
                         xtype: 'hiddenfield',
-                        name: 'textrev'
-                    },
-                    {
-                        xtype: 'hiddenfield',
-                        name: 'mapsrev'
-                    },
-                    {
-                        xtype: 'hiddenfield',
-                        name: 'imagesrev'
-                    },
-                    {
-                        xtype: 'hiddenfield',
                         name: 'list'
                     },
                     {
                         xtype: 'fieldset',
                         title: 'Description',
-                        items: {
-                            xtype: 'textfield',
-                            name: 'description'
-                        }
+                        items: [
+                            {
+                                xtype: 'textfield',
+                                name: 'description'
+                            },
+                            {
+                                xtype: 'hiddenfield',
+                                name: 'textrev'
+                            },
+                            {
+                                xtype: 'hiddenfield',
+                                name: 'textconflicts'
+                            },
+                            {
+                                xtype: 'todo-conflict'
+                            }
+                        ]
                     },
                     {
                         xtype: 'todo-image'

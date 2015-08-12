@@ -32,9 +32,6 @@ Ext.define('TodoApp.store.Item', {
 					conflicts: true
 				}, function (error, result) {
 					func(store, result.rows.map(function(e) {
-						if (e.doc._conflicts.length) {
-							console.log("Conflict!");
-						}
 						return e.doc;
 					}));
 				});
@@ -80,8 +77,17 @@ Ext.define('TodoApp.store.Item', {
 					}
 				}
 				if (indexOf === -1) {
-					docsArray.push(docs[i]);
+					var obj = Ext.clone(docs[i]);
+					obj[flag + 'rev'] = obj['_rev'];
+					obj['_rev'] = undefined;
+					if (obj['_conflicts'].length) {
+						obj[flag + 'conflicts'] = docs[i]['_conflicts'][0];
+					}
+					docsArray.push(obj);
 				} else {
+					if (docs[i]._conflicts.length) {
+						docsArray[indexOf][flag + 'conflicts'] = docs[i]['_conflicts'][0];
+					}
 					docsArray[indexOf][flag + 'rev'] = docs[i]['_rev'];
 					Ext.each(attributes, function(attr) {
 						docsArray[indexOf][attr] = docs[i][attr];

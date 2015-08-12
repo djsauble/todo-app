@@ -190,9 +190,13 @@ Ext.define('TodoApp.controller.Main', {
 		var store = this.getListDataView().getStore(),
 			editPanel = this.getEditPanel(),
 			editForm = this.getEditForm(),
+			textPanel = editForm.down('fieldset[title=Description]'),
 			imagePanel = editForm.down('todo-image'),
-			record = store.findRecord('_id', button.getData());//,
-			mediaData = record.get('media');
+			record = store.findRecord('_id', button.getData()),
+			mediaData = record.get('media'),
+			textConflicts = record.get('textconflicts'),
+			mapsConflicts = record.get('mapsconflicts'),
+			imagesConflicts = record.get('imagesconflicts');
 
 		editForm.setRecord(record);
 
@@ -205,6 +209,13 @@ Ext.define('TodoApp.controller.Main', {
 			imagePanel.down('panel').setHtml('No image loaded');
 			imagePanel.down('button[text=Select]').setHidden(false);
 			imagePanel.down('button[text=Remove]').setHidden(true);
+		}
+
+		// Show conflicts
+		if (textConflicts) {
+			textPanel.down('todo-conflict').setHidden(false);
+		} else {
+			textPanel.down('todo-conflict').setHidden(true);
 		}
 
 		this.showEditView();
@@ -277,7 +288,7 @@ Ext.define('TodoApp.controller.Main', {
 		var store = Ext.getStore('Item'),
 			values = this.getEditForm().getValues(),
 			record = store.findRecord('_id', values._id);
-
+console.log(values);
 		record.setData(values);
 		record.setDirty(); // Needed otherwise update record will not sync
 		store.sync();

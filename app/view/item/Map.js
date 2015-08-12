@@ -22,6 +22,10 @@ Ext.define('TodoApp.view.item.Map', {
         		name: 'longitude'
         	},
             {
+                xtype: 'hiddenfield',
+                name: 'mapsrev'
+            },
+            {
                 xtype: 'container',
                 layout: 'fit',
                 html: 'No location selected'
