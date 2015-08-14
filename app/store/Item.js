@@ -36,31 +36,31 @@ Ext.define('TodoApp.store.Item', {
 					}));
 				});
   	},
-  	setDataIfNeeded: function(store, docs) {
+  	setDataIfNeeded: function(store, docs, flag) {
   		var sortFn = function(a, b) {
   			return a._id > b._id ? 1 : a._id == b._id ? 0 : -1;
   		};
-  		var recordIds = store.getData().all.map(function(r) {
-  			var data = r.getData();
-  			return {
-  				"_id": data._id,
-  				"_rev": data._rev
+  		var records = store.getData().all.map(
+  			function(r) {
+  				return r.getData();
   			}
-  		}).sort(sortFn);
-  		var docIds = docs.map(function(r) {
-  			return {
-  				"_id": r._id,
-  				"_rev": r._rev
-  			}
-  		}).sort(sortFn);
+		).sort(sortFn);
+		docs = docs.filter(function(n) {
+			for (var i = 0; i < records.length; ++i) {
+				if (n._id == records[i]._id) {
+					return true;
+				}
+			}
+			return !!n[flag + 'rev'];
+		}).sort(sortFn);
 
-  		if (recordIds.length !== docIds.length) {
+  		if (records.length !== docs.length) {
   			store.setData(docs);
   			return;
   		}
 
-  		for (var i = 0; i < recordIds.length; ++i) {
-  			if (recordIds[i]._id != docIds[i]._id || recordIds[i]._rev != docIds[i]._rev) {
+  		for (var i = 0; i < records.length; ++i) {
+  			if (records[i]._id != docs[i]._id || records[i]._rev != docs[i]._rev) {
   				store.setData(docs);
   				return;
   			}
@@ -101,18 +101,18 @@ Ext.define('TodoApp.store.Item', {
   		var me = this;
   		var updateImages = function(docsArray) {
   			me.loadDocsAttributes(me, store.localImagesDB, docsArray, ['media'], 'images', function(docs) {
-  				me.setDataIfNeeded(store, docs);
+  				me.setDataIfNeeded(store, docs, 'images');
   			});
   		};
   		var updateMaps = function(docsArray) {
   			me.loadDocsAttributes(me, store.localMapsDB, docsArray, ['latitude', 'longitude'], 'maps', function(docs) {
-  				me.setDataIfNeeded(store, docs);
+  				me.setDataIfNeeded(store, docs, 'maps');
   				updateImages(docs);
   			});
   		};
 		var updateText = function(docsArray) {
 			me.loadDocsAttributes(me, store.localTextDB, docsArray, ['description'], 'text', function(docs) {
-				me.setDataIfNeeded(store, docs);
+				me.setDataIfNeeded(store, docs, 'text');
 				updateMaps(docs);
 			});
 		};
