@@ -45,13 +45,13 @@ Ext.define('TodoApp.store.Item', {
   			return {
   				"_id": data._id,
   				"_rev": data._rev
-  			}
+  			};
   		}).sort(sortFn);
   		var docIds = docs.map(function(r) {
   			return {
   				"_id": r._id,
   				"_rev": r._rev
-  			}
+  			};
   		}).sort(sortFn);
 
   		if (recordIds.length !== docIds.length) {
@@ -68,6 +68,14 @@ Ext.define('TodoApp.store.Item', {
   	},
   	loadDocsAttributes: function(me, store, docsArray, attributes, flag, callback) {
 		me.doWithDocs(store, function(pouchdb, docs) {
+			docsArray = docsArray.filter(function(n) {
+				for (var i = 0; i < docs.length; ++i) {
+					if (n._id == docs[i]._id) {
+						return true;
+					}
+				}
+				return !!n[flag + 'rev'];
+			});
 			for (var i = 0; i < docs.length; ++i) {
 				var indexOf = -1;
 				for (var j = 0; j < docsArray.length; ++j) {
@@ -76,22 +84,19 @@ Ext.define('TodoApp.store.Item', {
 						break;
 					}
 				}
+				var obj = {};
+				obj['_id'] = docs[i]._id;
+				obj[flag + 'rev'] = docs[i]._rev;
+				Ext.each(attributes, function(attr) {
+					obj[attr] = docs[i][attr];
+				});
+				if (docs[i]._conflicts.length) {
+					obj[flag + 'conflicts'] = docs[i]._conflicts[0];
+				}
 				if (indexOf === -1) {
-					var obj = Ext.clone(docs[i]);
-					obj[flag + 'rev'] = obj['_rev'];
-					obj['_rev'] = undefined;
-					if (obj['_conflicts'].length) {
-						obj[flag + 'conflicts'] = docs[i]['_conflicts'][0];
-					}
 					docsArray.push(obj);
 				} else {
-					if (docs[i]._conflicts.length) {
-						docsArray[indexOf][flag + 'conflicts'] = docs[i]['_conflicts'][0];
-					}
-					docsArray[indexOf][flag + 'rev'] = docs[i]['_rev'];
-					Ext.each(attributes, function(attr) {
-						docsArray[indexOf][attr] = docs[i][attr];
-					});
+					Ext.apply(docsArray[indexOf], obj)
 				}
   			}
   			callback(docsArray);
