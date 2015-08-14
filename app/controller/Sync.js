@@ -67,31 +67,54 @@ Ext.define('TodoApp.controller.Sync', {
 		me.checkForTurbulence();
 	},
 	acceptChange: function(button) {
-		var store = Ext.getStore('Item').localTextDB,
+		var store = Ext.getStore('Item'),
+			pouchdb = store.localTextDB,
 			fieldset = button.up('fieldset'),
-			rev = fieldset.down('hiddenfield[name=textrev]'),
 			conflicts = fieldset.down('hiddenfield[name=textconflicts]'),
-			values = button.up('formpanel').getValues();
+			values = button.up('formpanel').getValues(),
+			record = store.findRecord('_id', values._id);
 
-		store.remove(values._id, values.textconflicts, function(error, doc) {
-			//console.log(doc);
+		pouchdb.remove(values._id, values.textconflicts, function(error, doc) {
+			pouchdb.get(values._id, function(error, doc) {
+				fieldset.down('todo-conflict').setHidden(true);
+
+				conflicts.setValue(undefined);
+
+				record.set('textconflicts', undefined);
+				record.setDirty();
+				store.sync();
+
+				Ext.getStore('Item').flagStoreForSync('text');
+			});
 		});
-
-		conflicts.setValue(undefined)
 	},
 	rejectChange: function(button) {
-		var store = Ext.getStore('Item').localTextDB,
+		var store = Ext.getStore('Item'),
+			pouchdb = store.localTextDB,
 			fieldset = button.up('fieldset'),
+			text = fieldset.down('textfield[name=description]'),
 			rev = fieldset.down('hiddenfield[name=textrev]'),
 			conflicts = fieldset.down('hiddenfield[name=textconflicts]'),
-			values = button.up('formpanel').getValues();
+			values = button.up('formpanel').getValues(),
+			record = store.findRecord('_id', values._id);
 
-		store.remove(values._id, values.textrev, function(error, doc) {
-			//console.log(doc);
+		pouchdb.remove(values._id, values.textrev, function(error, doc) {
+			pouchdb.get(values._id, function(error, doc) {
+				fieldset.down('todo-conflict').setHidden(true);
+
+				text.setValue(doc.description);
+				rev.setValue(values.textconflicts);
+				conflicts.setValue(undefined);
+
+				record.set('description', doc.description);
+				record.set('textrev', values.textconflicts);
+				record.set('textconflicts', undefined);
+				record.setDirty();
+				store.sync();
+
+				Ext.getStore('Item').flagStoreForSync('text');
+			});
 		});
-
-		rev.setValue(values.textconflicts);
-		conflicts.setValue(undefined);
 	},
 	predictBandwidth: function() {
 		var me = this;

@@ -288,7 +288,7 @@ Ext.define('TodoApp.controller.Main', {
 		var store = Ext.getStore('Item'),
 			values = this.getEditForm().getValues(),
 			record = store.findRecord('_id', values._id);
-console.log(values);
+
 		record.setData(values);
 		record.setDirty(); // Needed otherwise update record will not sync
 		store.sync();
