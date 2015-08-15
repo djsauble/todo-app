@@ -191,7 +191,7 @@ Ext.define('TodoApp.controller.Main', {
 			pouchdb = store.localTextDB,
 			editPanel = this.getEditPanel(),
 			editForm = this.getEditForm(),
-			textPanel = editForm.down('fieldset[title=Description]'),
+			textPanel = editForm.down('fieldset'),
 			conflictPanel = textPanel.down('todo-conflict'),
 			imagePanel = editForm.down('todo-image'),
 			record = store.findRecord('_id', button.getData()),

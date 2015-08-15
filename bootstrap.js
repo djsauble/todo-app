@@ -673,6 +673,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "TodoApp.view.collaborator.DataItem": [],
   "TodoApp.view.collaborator.List": [],
   "TodoApp.view.collaborator.New": [],
+  "TodoApp.view.item.Conflict": [],
   "TodoApp.view.item.DataItem": [],
   "TodoApp.view.item.Edit": [],
   "TodoApp.view.item.Image": [],
@@ -1429,6 +1430,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "TodoApp.view.collaborator.New": [
     "widget.todo-collaborator-new"
+  ],
+  "TodoApp.view.item.Conflict": [
+    "widget.todo-conflict"
   ],
   "TodoApp.view.item.DataItem": [
     "widget.todo-dataitem"
