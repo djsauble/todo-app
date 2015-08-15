@@ -5,16 +5,6 @@ Ext.define('TodoApp.view.item.Conflict', {
 	config: {
 		layout: 'hbox',
 	    items: [
-	        {
-	            xtype: 'button',
-	            text: 'Accept',
-	            action: 'accept'
-	        },
-	        {
-	            xtype: 'button',
-	            text: 'Reject',
-	            action: 'reject'
-	        }
 	    ]
 	}
 });

@@ -34,9 +34,6 @@ Ext.define('TodoApp.controller.Sync', {
 			},
 			'todo-edit button[action=accept]': {
 				tap: 'acceptChange'
-			},
-			'todo-edit button[action=reject]': {
-				tap: 'rejectChange'
 			}
 		}
 	},
@@ -70,50 +67,31 @@ Ext.define('TodoApp.controller.Sync', {
 		var store = Ext.getStore('Item'),
 			pouchdb = store.localTextDB,
 			fieldset = button.up('fieldset'),
-			conflicts = fieldset.down('hiddenfield[name=textconflicts]'),
-			values = button.up('formpanel').getValues(),
-			record = store.findRecord('_id', values._id);
-
-		pouchdb.remove(values._id, values.textconflicts, function(error, doc) {
-			pouchdb.get(values._id, function(error, doc) {
-				fieldset.down('todo-conflict').setHidden(true);
-
-				conflicts.setValue(undefined);
-
-				record.set('textconflicts', undefined);
-				record.setDirty();
-				store.sync();
-
-				Ext.getStore('Item').flagStoreForSync('text');
-			});
-		});
-	},
-	rejectChange: function(button) {
-		var store = Ext.getStore('Item'),
-			pouchdb = store.localTextDB,
-			fieldset = button.up('fieldset'),
 			text = fieldset.down('textfield[name=description]'),
 			rev = fieldset.down('hiddenfield[name=textrev]'),
 			conflicts = fieldset.down('hiddenfield[name=textconflicts]'),
 			values = button.up('formpanel').getValues(),
-			record = store.findRecord('_id', values._id);
+			record = store.findRecord('_id', values._id),
+			toremove;
 
-		pouchdb.remove(values._id, values.textrev, function(error, doc) {
-			pouchdb.get(values._id, function(error, doc) {
-				fieldset.down('todo-conflict').setHidden(true);
+		toremove = record.get('textconflicts').concat(record.get('textrev')).filter(function(r) {
+			return r != button.getData();
+		});
 
-				text.setValue(doc.description);
-				rev.setValue(values.textconflicts);
-				conflicts.setValue(undefined);
+		store.resolveConflicts(store, pouchdb, values._id, toremove, function(doc) {
+			fieldset.down('todo-conflict').setHidden(true);
 
-				record.set('description', doc.description);
-				record.set('textrev', values.textconflicts);
-				record.set('textconflicts', undefined);
-				record.setDirty();
-				store.sync();
+			text.setValue(doc.description);
+			rev.setValue(doc._rev);
+			conflicts.setValue(undefined);
 
-				Ext.getStore('Item').flagStoreForSync('text');
-			});
+			record.set('description', doc.description);
+			record.set('textrev', doc._rev);
+			record.set('textconflicts', undefined);
+			record.setDirty();
+			store.sync();
+
+			Ext.getStore('Item').flagStoreForSync('text');
 		});
 	},
 	predictBandwidth: function() {

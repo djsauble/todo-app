@@ -26,7 +26,6 @@ Ext.define('TodoApp.store.Item', {
 
   		store.allDocs({
 					include_docs: true,
-					attachments: true,
 					startKey: me.currentListId + "_",
 					endKey: me.currentListId + "_\uffff",
 					conflicts: true
@@ -81,12 +80,12 @@ Ext.define('TodoApp.store.Item', {
 					obj[flag + 'rev'] = obj['_rev'];
 					obj['_rev'] = undefined;
 					if (obj['_conflicts'].length) {
-						obj[flag + 'conflicts'] = docs[i]['_conflicts'][0];
+						obj[flag + 'conflicts'] = docs[i]['_conflicts'];
 					}
 					docsArray.push(obj);
 				} else {
 					if (docs[i]._conflicts.length) {
-						docsArray[indexOf][flag + 'conflicts'] = docs[i]['_conflicts'][0];
+						docsArray[indexOf][flag + 'conflicts'] = docs[i]['_conflicts'];
 					}
 					docsArray[indexOf][flag + 'rev'] = docs[i]['_rev'];
 					Ext.each(attributes, function(attr) {
@@ -289,6 +288,27 @@ Ext.define('TodoApp.store.Item', {
 			} else {
 				me.localMetaDB.put(doc);
 			}
+		});
+	},
+	getAllConflicts: function(me, store, id, revs, docs, callback) {
+		if (!revs.length) {
+			callback(docs);
+			return;
+		}
+		store.get(id, { rev: revs.shift() }, function(error, doc) {
+			docs.push(doc);
+			me.getAllConflicts(me, store, id, revs, docs, callback);
+		});
+	},
+	resolveConflicts: function(me, store, id, revs, callback) {
+		store.remove(id, revs.shift(), function(error, doc) {
+			if (!revs.length) {
+				store.get(id, function(error, doc) {
+					callback(doc);
+				});
+				return;
+			}
+			me.resolveConflicts(me, store, id, revs, callback);
 		});
 	}
 });

@@ -188,9 +188,11 @@ Ext.define('TodoApp.controller.Main', {
 	},
 	editTodoItem: function(button, e, eOpts) {
 		var store = this.getListDataView().getStore(),
+			pouchdb = store.localTextDB,
 			editPanel = this.getEditPanel(),
 			editForm = this.getEditForm(),
 			textPanel = editForm.down('fieldset[title=Description]'),
+			conflictPanel = textPanel.down('todo-conflict'),
 			imagePanel = editForm.down('todo-image'),
 			record = store.findRecord('_id', button.getData()),
 			mediaData = record.get('media'),
@@ -213,9 +215,20 @@ Ext.define('TodoApp.controller.Main', {
 
 		// Show conflicts
 		if (textConflicts) {
-			textPanel.down('todo-conflict').setHidden(false);
+			conflictPanel.removeAll();
+			store.getAllConflicts(store, pouchdb, button.getData(), textConflicts.concat(record.get('textrev')), [], function(docs) {
+				Ext.each(docs, function(d) {
+					conflictPanel.add({
+						xtype: 'button',
+						action: 'accept',
+						text: d.description,
+						data: d._rev
+					});
+				});
+				conflictPanel.setHidden(false);
+			});
 		} else {
-			textPanel.down('todo-conflict').setHidden(true);
+			conflictPanel.setHidden(true);
 		}
 
 		this.showEditView();
