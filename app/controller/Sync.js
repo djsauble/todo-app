@@ -80,6 +80,8 @@ Ext.define('TodoApp.controller.Sync', {
 
 		store.resolveConflicts(store, pouchdb, values._id, toremove, function(doc) {
 			fieldset.down('todo-conflict').setHidden(true);
+			fieldset.setTitle('Description');
+			text.setHidden(false);
 
 			text.setValue(doc.description);
 			rev.setValue(doc._rev);

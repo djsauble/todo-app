@@ -226,9 +226,13 @@ Ext.define('TodoApp.controller.Main', {
 					});
 				});
 				conflictPanel.setHidden(false);
+				textPanel.down('textfield[name=description]').setHidden(true);
+				textPanel.setTitle('Description (resolve conflict)');
 			});
 		} else {
 			conflictPanel.setHidden(true);
+			textPanel.down('textfield[name=description]').setHidden(false);
+			textPanel.setTitle('Description');
 		}
 
 		this.showEditView();
