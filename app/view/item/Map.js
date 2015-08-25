@@ -62,7 +62,7 @@ Ext.define('TodoApp.view.item.Map', {
         var mapPanel = obj.up('todo-map'),
             longitude = mapPanel.down('hiddenfield[name=longitude]').getValue(),
             latitude = mapPanel.down('hiddenfield[name=latitude]').getValue();
-        
+
         // Resize the Google map
         google.maps.event.trigger(map, 'resize');
 

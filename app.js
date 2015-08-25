@@ -17,6 +17,10 @@ Ext.application({
         'Ext.MessageBox'
     ],
 
+    uses: [
+        'TodoApp.patch.MapsError'
+    ],
+
     views: [
         'Main'
     ],
