@@ -30,7 +30,14 @@ Ext.define('TodoApp.view.collaborator.List', {
 	        	height: '100%',
 	        	useComponents: true,
 	        	defaultType: 'todo-collaborator-dataitem',
-            	store: 'Collaborator'
+            	store: 'Collaborator',
+            	emptyText: '<div style="' +
+				            'text-align: center;' +
+				            'height: 100%;' +
+				            'margin-top: 50%;">' +
+				            'Add a collaborator to this list' +
+				            '</div>',
+				deferEmptyText: true
 	        }
     	]
     }

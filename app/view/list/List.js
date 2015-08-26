@@ -30,7 +30,14 @@ Ext.define('TodoApp.view.list.List', {
 	        	height: '100%',
 	        	useComponents: true,
 	        	defaultType: 'todo-dataitem',
-	        	store: 'Item'
+	        	store: 'Item',
+                emptyText: '<div style="' +
+                            'text-align: center;' +
+                            'height: 100%;' +
+                            'margin-top: 50%;">' +
+                            'Add a todo item to this list' +
+                            '</div>',
+                deferEmptyText: true
 	        }
     	]
     },

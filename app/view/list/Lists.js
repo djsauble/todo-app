@@ -36,7 +36,14 @@ Ext.define('TodoApp.view.list.Lists', {
 	        	height: '100%',
 	        	useComponents: true,
 	        	defaultType: 'todo-list-dataitem',
-            	store: 'List'
+            	store: 'List',
+            	emptyText: '<div style="' +
+				            'text-align: center;' +
+				            'height: 100%;' +
+				            'margin-top: 50%;">' +
+				            'Create a todo list and help your brain' +
+				            '</div>',
+				deferEmptyText: true
 	        }
     	]
     },
