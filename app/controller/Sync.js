@@ -44,13 +44,14 @@ Ext.define('TodoApp.controller.Sync', {
 			listStore = Ext.getStore('List'),
 			itemStore = Ext.getStore('Item'),
 			record = Ext.getStore('User').first(),
+			options = { auto_compaction: true },
 			data;
 
-		listStore.localDB = new PouchDB('lists');
-		listStore.localMetaDB = itemStore.localMetaDB = new PouchDB('metadata');
-		itemStore.localTextDB = new PouchDB('text');
-		itemStore.localMapsDB = new PouchDB('maps');
-		itemStore.localImagesDB = new PouchDB('images');
+		listStore.localDB = new PouchDB('lists', options);
+		listStore.localMetaDB = itemStore.localMetaDB = new PouchDB('metadata', options);
+		itemStore.localTextDB = new PouchDB('text', options);
+		itemStore.localMapsDB = new PouchDB('maps', options);
+		itemStore.localImagesDB = new PouchDB('images', options);
 
 		if (record) {
 			data = record.getData();
@@ -268,6 +269,7 @@ Ext.define('TodoApp.controller.Sync', {
 	imagesSyncPending: null,
 	startMetaSyncing: function(me) {
 		var me = this,
+			options = { auto_compaction: true },
 			listStore = Ext.getStore('List'),
 			itemStore = Ext.getStore('Item');
 
@@ -304,11 +306,11 @@ Ext.define('TodoApp.controller.Sync', {
 		});
 		me.metaSyncHandler.on('complete', function (info) {
 			itemStore.localMetaDB.destroy().then(function() {
-				listStore.localDB = new PouchDB('lists');
-				itemStore.localTextDB = new PouchDB('text');
-				itemStore.localMapsDB = new PouchDB('maps');
-				itemStore.localImagesDB = new PouchDB('images');
-				itemStore.localMetaDB = new PouchDB('metadata');
+				listStore.localDB = new PouchDB('lists', options);
+				itemStore.localTextDB = new PouchDB('text', options);
+				itemStore.localMapsDB = new PouchDB('maps', options);
+				itemStore.localImagesDB = new PouchDB('images', options);
+				itemStore.localMetaDB = new PouchDB('metadata', options);
 				me.getListsPanel().down('button[action=signin]').show();
 				me.getListsPanel().down('button[action=signout]').hide();
 				me.metaSyncHandler = null;
