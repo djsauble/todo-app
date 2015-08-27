@@ -19,13 +19,15 @@ Ext.define('TodoApp.controller.Main', {
 			'User',
 			'List',
 			'Collaborator',
-			'Position'
+			'Position',
+			'Restore'
 		],
 		stores: [
 			'User',
 			'List',
 			'Collaborator',
-			'Position'
+			'Position',
+			'Restore'
 		],
 		refs: {
 			main: 'todo-main',
@@ -96,7 +98,7 @@ Ext.define('TodoApp.controller.Main', {
 				tap: 'shareList',
 			},
 			'todo-lists button[action=edit]': {
-				tap: 'editList'
+				tap: 'onEditListClick'
 			},
 			'todo-lists button[action=delete]': {
 				tap: 'deleteList'
@@ -114,7 +116,7 @@ Ext.define('TodoApp.controller.Main', {
 				tap: 'showNewView'
 			},
 			'todo-list button[action=edit]': {
-				tap: 'editTodoItem'
+				tap: 'onEditTodoItemClick'
 			},
 			'todo-list button[action=delete]': {
 				tap: 'deleteTodoItem'
@@ -186,7 +188,10 @@ Ext.define('TodoApp.controller.Main', {
 
 		this.showListsView();
 	},
-	editTodoItem: function(button, e, eOpts) {
+	onEditTodoItemClick: function(button, e, eOpts) {
+		this.editTodoItem(button.getData());
+	},
+	editTodoItem: function(itemId) {
 		var store = this.getListDataView().getStore(),
 			pouchdb = store.localTextDB,
 			editPanel = this.getEditPanel(),
@@ -194,7 +199,7 @@ Ext.define('TodoApp.controller.Main', {
 			textPanel = editForm.down('fieldset'),
 			conflictPanel = textPanel.down('todo-conflict'),
 			imagePanel = editForm.down('todo-image'),
-			record = store.findRecord('_id', button.getData()),
+			record = store.findRecord('_id', itemId),
 			mediaData = record.get('media'),
 			textConflicts = record.get('textconflicts'),
 			mapsConflicts = record.get('mapsconflicts'),
@@ -216,7 +221,7 @@ Ext.define('TodoApp.controller.Main', {
 		// Show conflicts
 		if (textConflicts) {
 			conflictPanel.removeAll();
-			store.getAllConflicts(store, pouchdb, button.getData(), textConflicts.concat(record.get('textrev')), [], function(docs) {
+			store.getAllConflicts(store, pouchdb, itemId, textConflicts.concat(record.get('textrev')), [], function(docs) {
 				Ext.each(docs, function(d) {
 					conflictPanel.add({
 						xtype: 'button',
@@ -235,18 +240,22 @@ Ext.define('TodoApp.controller.Main', {
 			textPanel.setTitle('Description');
 		}
 
+		this.saveView(store.currentListId, itemId);
 		this.showEditView();
 	},
-	editList: function(button, e, eOpts) {
+	onEditListClick: function(button, e, eOpts) {
+		this.editList(button.getData());
+	},
+	editList: function(listId) {
 		var listStore = Ext.getStore('List'),
-			record = listStore.findRecord('_id', button.getData()),
+			record = listStore.findRecord('_id', listId),
 			items = record.getData().items,
 			listPanel = this.getListPanel(),
 			listDataView = this.getListDataView(),
 			itemStore = Ext.getStore('Item');
 
-		listStore.currentListId = button.getData();
-		itemStore.currentListId = button.getData();
+		listStore.currentListId = listId;
+		itemStore.currentListId = listId;
 		itemStore.filter([
 			{
 				filterFn: function(e) {
@@ -323,6 +332,14 @@ Ext.define('TodoApp.controller.Main', {
 		this.getMainPanel().setActiveItem(index);
 		this.getMainPanel().activeIndex = index;
 
+		var xtype = this.getMainPanel().getActiveItem().xtype;
+		if (xtype === 'todo-list') {
+			this.saveView(Ext.getStore('List').currentListId, null);
+		}
+		else if (xtype === 'todo-lists') {
+			this.saveView(null, null);
+		}
+
 		this.loadMapResource();
 	},
 	goBack: function() {
@@ -333,7 +350,24 @@ Ext.define('TodoApp.controller.Main', {
 		}
 		this.getMainPanel().setActiveItem(this.getMainPanel().activeIndex);
 
+		var xtype = this.getMainPanel().getActiveItem().xtype;
+		if (xtype === 'todo-list') {
+			this.saveView(Ext.getStore('List').currentListId, null);
+		}
+		else if (xtype === 'todo-lists') {
+			this.saveView(null, null);
+		}
+
 		this.loadMapResource();
+	},
+	saveView: function(currentListId, currentItemId) {
+		var store = Ext.getStore('Restore');
+
+		store.removeAll();
+		store.add({
+			'currentListId': currentListId,
+			'currentItemId': currentItemId
+		});
 	},
 	showListsView: function() {
 		this.showView(this.getListsPanel(), 0);

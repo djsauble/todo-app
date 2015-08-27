@@ -353,6 +353,7 @@ Ext.define('TodoApp.controller.Sync', {
 
 		me.doSync(syncLists, syncText, syncMaps, syncImages);
 	},
+	restoreOnLoad: true,
 	doSync: function(syncLists, syncText, syncMaps, syncImages) {
 		var me = this,
 			itemStore = Ext.getStore('Item'),
@@ -380,8 +381,25 @@ Ext.define('TodoApp.controller.Sync', {
 			});
 		} else if (syncImages) {
 			itemStore.localImagesDB.sync(itemStore.remoteImagesDB, function() {
-				itemStore.load();
+				itemStore.load(function() {
+					me.doSync(false, false, false, false);
+				});
 			});
+		} else if (me.restoreOnLoad) {
+			var store = Ext.getStore('Restore'),
+				record;
+
+			if (store.getCount()) {
+				record = store.getAt(0);
+				if (record.get('currentListId')) {
+					me.getApplication().getController('Main').editList(record.get('currentListId'));
+				}
+				if (record.get('currentItemId')) {
+					me.getApplication().getController('Main').editTodoItem(record.get('currentItemId'));
+				}
+			}
+
+			me.restoreOnLoad = false;
 		}
 	},
 	online: null,
