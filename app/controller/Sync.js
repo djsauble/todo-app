@@ -273,11 +273,11 @@ Ext.define('TodoApp.controller.Sync', {
 			listStore = Ext.getStore('List'),
 			itemStore = Ext.getStore('Item');
 
-		listStore.remoteDB = new PouchDB('https://' + itemStore.username + ':' + itemStore.password + '@djsauble.cloudant.com/lists');
-		itemStore.remoteTextDB = new PouchDB('https://' + itemStore.username + ':' + itemStore.password + '@djsauble.cloudant.com/text');
-		itemStore.remoteMapsDB = new PouchDB('https://' + itemStore.username + ':' + itemStore.password + '@djsauble.cloudant.com/maps');
-		itemStore.remoteImagesDB = new PouchDB('https://' + itemStore.username + ':' + itemStore.password + '@djsauble.cloudant.com/images');
-		itemStore.remoteMetaDB = new PouchDB('https://' + itemStore.username + ':' + itemStore.password + '@djsauble.cloudant.com/metadata');
+		listStore.remoteDB = new PouchDB('http://192.168.1.1:5984/lists');
+		itemStore.remoteTextDB = new PouchDB('http://192.168.1.1:5984/text');
+		itemStore.remoteMapsDB = new PouchDB('http://192.168.1.1:5984/maps');
+		itemStore.remoteImagesDB = new PouchDB('http://192.168.1.1:5984/images');
+		itemStore.remoteMetaDB = new PouchDB('http://192.168.1.1:5984/metadata');
 		me.metaSyncHandler = itemStore.localMetaDB.sync(itemStore.remoteMetaDB, {
 			live: true,
 			retry: true,
