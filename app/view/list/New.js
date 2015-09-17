@@ -37,7 +37,8 @@ Ext.define('TodoApp.view.list.New', {
                         title: 'Name',
                         items: {
                             xtype: 'textfield',
-                            name: 'name'
+                            name: 'name',
+                            itemId: 'name'
                         }
                     }
                 ]

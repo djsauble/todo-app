@@ -2,7 +2,8 @@ var Harness = Siesta.Harness.Browser.SenchaTouch;
 
 Harness.configure({
     title : 'Todo App',
-    //testClass : 'TodoApp'
+    viewportWidth: 320,
+    viewportHeight: 600
 });
 
 Harness.start(
@@ -11,7 +12,7 @@ Harness.start(
         hostPageUrl : '/',
         performSetup : false,
         items : [ 
-            'sanity.t.js'
+            '01_add_todo_item.t.js'
         ] 
     } 
 );
