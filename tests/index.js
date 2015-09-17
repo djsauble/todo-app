@@ -2,16 +2,16 @@ var Harness = Siesta.Harness.Browser.SenchaTouch;
 
 Harness.configure({
     title : 'Todo App',
-    testClass : 'TodoApp'
+    //testClass : 'TodoApp'
 });
 
 Harness.start(
     { 
         group : 'Todo app tests',
-        hostPageUrl : 'TodoApp/',
+        hostPageUrl : '/',
         performSetup : false,
         items : [ 
-            // TODO: Tests go here
+            'sanity.t.js'
         ] 
     } 
 );
